@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutTo - Сокращение ссылок</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; max-width: 600px; width: 100%; }
+        h1 { color: #667eea; font-size: 32px; margin-bottom: 10px; text-align: center; }
+        .subtitle { color: #666; text-align: center; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: border-color 0.3s; }
+        input[type="text"]:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        button:hover { transform: translateY(-2px); }
+        .result { display: none; margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 10px; }
+        .result.show { display: block; }
+        .short-url { margin-bottom: 15px; }
+        .short-url input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; color: #333; font-weight: 500; margin-bottom: 10px; }
+        .copy-btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; }
+        .qr-code { text-align: center; margin-top: 20px; }
+        .qr-code img { max-width: 200px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .error { display: none; padding: 15px; background: #fee; border: 1px solid #fcc; border-radius: 10px; color: #c33; margin-top: 15px; }
+        .error.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ CutTo</h1>
+        <p class="subtitle">Превратите длинные ссылки в короткие</p>
+        <div class="input-group">
+            <label for="urlInput">Введите длинную ссылку:</label>
+            <input type="text" id="urlInput" placeholder="https://example.com/very/long/url">
+        </div>
+        <button id="shortenBtn">Создать короткую ссылку</button>
+        <div class="error" id="error"></div>
+        <div class="result" id="result">
+            <h3 style="margin-bottom: 15px; color: #333;">✅ Ссылка создана!</h3>
+            <div class="short-url">
+                <input type="text" id="shortUrlInput" readonly>
+                <button class="copy-btn" id="copyBtn">Копировать</button>
+            </div>
+            <div class="qr-code">
+                <p style="margin-bottom: 10px; color: #666;">QR-код:</p>
+                <img id="qrCodeImg" src="" alt="QR Code">
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('shortenBtn').addEventListener('click', async function() {
+            const url = document.getElementById('urlInput').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            errorDiv.classList.remove('show');
+            resultDiv.classList.remove('show');
+            if (!url) {
+                errorDiv.textContent = 'Пожалуйста, введите URL';
+                errorDiv.classList.add('show');
+                return;
+            }
+            try {
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('shortUrlInput').value = data.shortUrl;
+                    document.getElementById('qrCodeImg').src = data.qrCode;
+                    resultDiv.classList.add('show');
+                } else {
+                    errorDiv.textContent = data.error || 'Произошла ошибка';
+                    errorDiv.classList.add('show');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Ошибка соединения';
+                errorDiv.classList.add('show');
+            }
+        });
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const input = document.getElementById('shortUrlInput');
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                this.textContent = '✓ Скопировано';
+                setTimeout(() => { this.textContent = 'Копировать'; }, 2000);
+            });
+        });
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('shortenBtn').click();
+        });
+    </script>
+</body>
+</html>
