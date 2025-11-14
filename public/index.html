@@ -1,66 +1,374 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CutTo - Профессиональное сокращение ссылок</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { font-size: 48px; margin-bottom: 10px; }
-        .header p { font-size: 18px; opacity: 0.9; }
-        .auth-bar { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .auth-bar button { padding: 10px 20px; background: white; color: #667eea; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .auth-bar .user-info { background: white; padding: 10px 20px; border-radius: 8px; color: #667eea; font-weight: 600; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
-        @media (max-width: 968px) { .container { grid-template-columns: 1fr; } }
-        .card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 30px; }
-        .card h2 { color: #667eea; margin-bottom: 20px; font-size: 24px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; font-size: 14px; }
-        input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: border-color 0.3s; }
-        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: #667eea; }
-        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-        button:hover { transform: translateY(-2px); }
-        .result { display: none; margin-top: 20px; padding: 20px; background: #f5f5f5; border-radius: 10px; }
-        .result.show { display: block; }
-        .short-url input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 15px; color: #333; font-weight: 500; margin-bottom: 10px; }
-        .copy-btn { padding: 10px; background: #667eea; }
-        .qr-code { text-align: center; margin-top: 15px; }
-        .qr-code img { max-width: 150px; border-radius: 10px; }
-        .error, .success { display: none; padding: 12px; border-radius: 10px; margin-top: 12px; font-size: 14px; }
-        .error { background: #fee; border: 1px solid #fcc; color: #c33; }
-        .success { background: #efe; border: 1px solid #cfc; color: #3c3; }
-        .error.show, .success.show { display: block; }
-        .links-list { max-height: 600px; overflow-y: auto; }
-        .link-item { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #667eea; position: relative; padding-right: 100px; }
-        .link-item .url { font-size: 13px; color: #666; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: calc(100% - 100px); }
-        .link-item .short { font-size: 15px; color: #667eea; font-weight: 600; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: calc(100% - 100px); cursor: pointer; }
-        .link-item .stats { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #999; max-width: calc(100% - 100px); }
-        .link-item .clicks { background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-        .link-item .delete-btn { position: absolute; top: 15px; right: 15px; background: #ff4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .empty-state { text-align: center; padding: 40px; color: #999; }
-        .empty-state svg { width: 80px; height: 80px; margin-bottom: 15px; opacity: 0.3; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.show { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 400px; width: 90%; }
-        .modal-content h2 { margin-bottom: 20px; color: #667eea; }
-        .modal-content button { margin-top: 10px; }
-        .switch-btn { background: none; color: #667eea; text-decoration: underline; cursor: pointer; font-size: 14px; padding: 0; margin-top: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .auth-bar {
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .auth-bar button {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-bar .user-info {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .short-url input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            padding: 10px;
+            background: #667eea;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .qr-code img {
+            max-width: 150px;
+            border-radius: 10px;
+        }
+
+        .error,
+        .success {
+            display: none;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+        }
+
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+        }
+
+        .error.show,
+        .success.show {
+            display: block;
+        }
+
+        .links-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .link-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            position: relative;
+            padding-right: 100px;
+        }
+
+        .link-item .url {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: calc(100% - 100px);
+        }
+
+        .link-item .short {
+            font-size: 15px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: calc(100% - 100px);
+            cursor: pointer;
+        }
+
+        .link-item .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #999;
+            max-width: calc(100% - 100px);
+        }
+
+        .link-item .clicks {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .link-item .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+        }
+
+        .switch-btn {
+            background: none;
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            margin-top: 10px;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>✨ CutTo</h1>
         <p>Профессиональное сокращение ссылок с аналитикой</p>
     </div>
-    
+
     <div class="auth-bar" id="authBar">
         <button onclick="showLoginModal()">Войти</button>
         <button onclick="showRegisterModal()">Регистрация</button>
     </div>
-    
+
     <div class="container">
         <div class="card">
             <h2>Создать короткую ссылку</h2>
@@ -82,18 +390,22 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>Ваши ссылки</h2>
             <div class="links-list" id="linksList">
                 <div class="empty-state">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                        </path>
+                    </svg>
                     <p>Пока нет созданных ссылок</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="modal" id="authModal">
         <div class="modal-content">
             <h2 id="modalTitle">Вход</h2>
@@ -103,22 +415,53 @@
             </div>
             <div class="input-group">
                 <label for="authPassword">Пароль:</label>
-                <input type="password" id="authPassword" placeholder="Минимум 6 символов">
+                <input type="password" id="authPassword" placeholder="Минимум 8 символов, буквы и цифры">
+            </div>
+            <div class="input-group" id="confirmPasswordGroup" style="display: none;">
+                <label for="authPasswordConfirm">Подтвердите пароль:</label>
+                <input type="password" id="authPasswordConfirm" placeholder="Повторите пароль">
             </div>
             <div class="error" id="authError"></div>
             <div class="success" id="authSuccess"></div>
             <button id="authSubmitBtn">Войти</button>
             <button class="switch-btn" id="switchBtn">Нет аккаунта? Зарегистрироваться</button>
+            <button class="switch-btn" id="forgotPasswordBtn" style="display: none;">Забыли пароль?</button>
             <button class="switch-btn" onclick="closeAuthModal()">Закрыть</button>
         </div>
     </div>
-    
+
     <script>
         let allLinks = [];
         let isLoginMode = true;
         let token = localStorage.getItem('token');
         let currentUser = null;
-        
+
+        // Проверка сообщений из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+
+        if (message === 'email_verified') {
+            setTimeout(() => {
+                alert('✅ Email успешно подтверждён! Теперь вы можете войти.');
+                // Удаляем параметр из URL
+                window.history.replaceState({}, document.title, '/');
+            }, 500);
+        }
+
+        if (message === 'already_verified') {
+            setTimeout(() => {
+                alert('ℹ️ Email уже подтверждён. Можете войти.');
+                // Удаляем параметр из URL
+                window.history.replaceState({}, document.title, '/');
+            }, 500);
+        }
+
+        if (message === 'already_verified') {
+            setTimeout(() => {
+                alert('ℹ️ Email уже подтверждён. Можете войти.');
+            }, 500);
+        }
+
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
@@ -128,100 +471,156 @@
                 localStorage.removeItem('token');
             }
         }
-        
+
         function updateAuthBar() {
             const authBar = document.getElementById('authBar');
             if (currentUser) {
                 authBar.innerHTML = `
-                    <div class="user-info">${currentUser.email}</div>
-                    <button onclick="logout()">Выйти</button>
-                `;
+            <div class="user-info">${currentUser.email}</div>
+            <button onclick="logout()">Выйти</button>
+        `;
             } else {
                 authBar.innerHTML = `
-                    <button onclick="showLoginModal()">Войти</button>
-                    <button onclick="showRegisterModal()">Регистрация</button>
-                `;
+            <button onclick="showLoginModal()">Войти</button>
+            <button onclick="showRegisterModal()">Регистрация</button>
+        `;
             }
+            loadLinks();
         }
-        
+
         function logout() {
             localStorage.removeItem('token');
             token = null;
             currentUser = null;
             updateAuthBar();
             loadLinks();
+            document.getElementById('result').classList.remove('show');
         }
-        
+
         function showLoginModal() {
             isLoginMode = true;
             document.getElementById('modalTitle').textContent = 'Вход';
             document.getElementById('authSubmitBtn').textContent = 'Войти';
             document.getElementById('switchBtn').textContent = 'Нет аккаунта? Зарегистрироваться';
+            document.getElementById('confirmPasswordGroup').style.display = 'none';
+            document.getElementById('forgotPasswordBtn').style.display = 'block';
             document.getElementById('authModal').classList.add('show');
             document.getElementById('authError').classList.remove('show');
             document.getElementById('authSuccess').classList.remove('show');
         }
-        
+
         function showRegisterModal() {
             isLoginMode = false;
             document.getElementById('modalTitle').textContent = 'Регистрация';
             document.getElementById('authSubmitBtn').textContent = 'Зарегистрироваться';
             document.getElementById('switchBtn').textContent = 'Уже есть аккаунт? Войти';
+            document.getElementById('confirmPasswordGroup').style.display = 'block';
+            document.getElementById('forgotPasswordBtn').style.display = 'none';
             document.getElementById('authModal').classList.add('show');
             document.getElementById('authError').classList.remove('show');
             document.getElementById('authSuccess').classList.remove('show');
         }
-        
+
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('show');
             document.getElementById('authEmail').value = '';
             document.getElementById('authPassword').value = '';
+            document.getElementById('authPasswordConfirm').value = '';
         }
-        
-        document.getElementById('switchBtn').addEventListener('click', function() {
+
+        document.getElementById('switchBtn').addEventListener('click', function () {
             if (isLoginMode) {
                 showRegisterModal();
             } else {
                 showLoginModal();
             }
         });
-        
-        document.getElementById('authSubmitBtn').addEventListener('click', async function() {
+
+        document.getElementById('authSubmitBtn').addEventListener('click', async function () {
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
+            const passwordConfirm = document.getElementById('authPasswordConfirm').value;
             const errorDiv = document.getElementById('authError');
             const successDiv = document.getElementById('authSuccess');
-            
+
             errorDiv.classList.remove('show');
             successDiv.classList.remove('show');
-            
-            if (!email || !password) {
-                errorDiv.textContent = 'Заполните все поля';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
+
+            // Показываем загрузку
+            const btn = document.getElementById('authSubmitBtn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            const originalText = btn.textContent;
+            btn.textContent = 'Загрузка...';
+
             try {
+                // Валидация
+                if (!email || !password) {
+                    errorDiv.textContent = 'Заполните все поля';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                // Проверка формата email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    errorDiv.textContent = 'Введите корректный email';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                // Для регистрации - дополнительные проверки
+                if (!isLoginMode) {
+                    if (password.length < 8) {
+                        errorDiv.textContent = 'Пароль должен быть минимум 8 символов';
+                        errorDiv.classList.add('show');
+                        return;
+                    }
+
+                    const hasLetter = /[a-zA-Z]/.test(password);
+                    const hasNumber = /[0-9]/.test(password);
+                    if (!hasLetter || !hasNumber) {
+                        errorDiv.textContent = 'Пароль должен содержать буквы и цифры';
+                        errorDiv.classList.add('show');
+                        return;
+                    }
+
+                    if (password !== passwordConfirm) {
+                        errorDiv.textContent = 'Пароли не совпадают';
+                        errorDiv.classList.add('show');
+                        return;
+                    }
+                }
+
                 const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    token = data.token;
-                    currentUser = data.user;
-                    successDiv.textContent = isLoginMode ? 'Вход выполнен!' : 'Регистрация успешна!';
-                    successDiv.classList.add('show');
-                    updateAuthBar();
-                    setTimeout(() => {
-                        closeAuthModal();
-                        loadLinks();
-                    }, 1000);
+                    if (!isLoginMode && data.needsVerification) {
+                        successDiv.innerHTML = '✅ Регистрация успешна!<br>Проверьте вашу почту для подтверждения email.<br><small style="color: #999;">Это окно закроется через 5 секунд</small>';
+                        successDiv.classList.add('show');
+                        setTimeout(() => {
+                            closeAuthModal();
+                        }, 5000);
+                    } else {
+                        localStorage.setItem('token', data.token);
+                        token = data.token;
+                        currentUser = data.user;
+                        successDiv.textContent = 'Вход выполнен!';
+                        successDiv.classList.add('show');
+                        updateAuthBar();
+                        document.getElementById('result').classList.remove('show');
+                        setTimeout(() => {
+                            closeAuthModal();
+                            loadLinks();
+                        }, 1000);
+                    }
                 } else {
                     errorDiv.textContent = data.error;
                     errorDiv.classList.add('show');
@@ -229,9 +628,56 @@
             } catch (error) {
                 errorDiv.textContent = 'Ошибка соединения';
                 errorDiv.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = originalText;
             }
         });
-        
+
+        // Забыли пароль
+        document.getElementById('forgotPasswordBtn').addEventListener('click', function () {
+            const email = document.getElementById('authEmail').value;
+            const errorDiv = document.getElementById('authError');
+            const successDiv = document.getElementById('authSuccess');
+
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+
+            if (!email) {
+                errorDiv.textContent = 'Введите email для восстановления пароля';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = 'Введите корректный email';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        successDiv.textContent = 'Письмо с инструкциями отправлено на ваш email';
+                        successDiv.classList.add('show');
+                    } else {
+                        errorDiv.textContent = data.error || 'Ошибка';
+                        errorDiv.classList.add('show');
+                    }
+                })
+                .catch(error => {
+                    errorDiv.textContent = 'Ошибка соединения';
+                    errorDiv.classList.add('show');
+                });
+        });
+
         async function loadLinks() {
             try {
                 const headers = {};
@@ -246,29 +692,41 @@
                 console.error('Error loading links:', error);
             }
         }
-        
+
         function renderLinks() {
             const container = document.getElementById('linksList');
+            const linksCard = container.closest('.card');
+
+            // Если не залогинен - скрываем весь блок
+            if (!currentUser) {
+                if (linksCard) linksCard.style.display = 'none';
+                return;
+            }
+
+            // Если залогинен - показываем блок
+            if (linksCard) linksCard.style.display = 'block';
+
             if (allLinks.length === 0) {
                 container.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg><p>Пока нет созданных ссылок</p></div>';
                 return;
             }
+
             container.innerHTML = allLinks.map(link => `
-                <div class="link-item">
-                    ${currentUser ? `<button class="delete-btn" onclick="deleteLink('${link.short_code}')">Удалить</button>` : ''}
-                    <div class="url" title="${link.original_url}">${link.original_url}</div>
-                    <div class="short" onclick="copyShortLink('${window.location.origin}/${link.short_code}')" title="Нажмите, чтобы скопировать">${window.location.origin}/${link.short_code}</div>
-                    <div class="stats">
-                        <span>${new Date(link.created_at).toLocaleDateString('ru-RU')}</span>
-                        <span class="clicks">${link.clicks || 0} ${link.clicks === 1 ? 'клик' : 'кликов'}</span>
-                    </div>
-                </div>
-            `).join('');
+        <div class="link-item">
+            ${currentUser ? `<button class="delete-btn" onclick="deleteLink('${link.short_code}')">Удалить</button>` : ''}
+            <div class="url" title="${link.original_url}">${link.original_url}</div>
+            <div class="short" onclick="copyShortLink('${window.location.origin}/${link.short_code}')" title="Нажмите, чтобы скопировать">${window.location.origin}/${link.short_code}</div>
+            <div class="stats">
+                <span>${new Date(link.created_at).toLocaleDateString('ru-RU')}</span>
+                <span class="clicks">${link.clicks || 0} ${link.clicks === 1 ? 'клик' : 'кликов'}</span>
+            </div>
+        </div>
+          `).join('');
         }
-        
+
         async function deleteLink(shortCode) {
             if (!confirm('Удалить эту ссылку?')) return;
-            
+
             try {
                 const response = await fetch(`/api/links/${shortCode}`, {
                     method: 'DELETE',
@@ -276,7 +734,7 @@
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                
+
                 const data = await response.json();
                 if (data.success) {
                     loadLinks();
@@ -285,14 +743,14 @@
                 alert('Ошибка удаления');
             }
         }
-        
+
         function copyShortLink(url) {
             navigator.clipboard.writeText(url).then(() => {
                 alert('Ссылка скопирована!');
             });
         }
-        
-        document.getElementById('shortenBtn').addEventListener('click', async function() {
+
+        document.getElementById('shortenBtn').addEventListener('click', async function () {
             const url = document.getElementById('urlInput').value;
             const errorDiv = document.getElementById('error');
             const resultDiv = document.getElementById('result');
@@ -329,8 +787,8 @@
                 errorDiv.classList.add('show');
             }
         });
-        
-        document.getElementById('copyBtn').addEventListener('click', function() {
+
+        document.getElementById('copyBtn').addEventListener('click', function () {
             const input = document.getElementById('shortUrlInput');
             input.select();
             navigator.clipboard.writeText(input.value).then(() => {
@@ -338,12 +796,13 @@
                 setTimeout(() => { this.textContent = 'Копировать'; }, 2000);
             });
         });
-        
-        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+
+        document.getElementById('urlInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') document.getElementById('shortenBtn').click();
         });
-        
+
         loadLinks();
     </script>
 </body>
+
 </html>
