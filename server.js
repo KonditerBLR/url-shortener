@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const routes = require('./routes');
+const { router: authRoutes } = require('./auth');
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.static('public'));
 
 // Routes
 app.use('/api', routes);
+app.use('/api/auth', authRoutes);
 app.use('/', routes);
 
 app.listen(PORT, () => {
