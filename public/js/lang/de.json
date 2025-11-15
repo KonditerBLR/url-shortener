@@ -82,11 +82,13 @@
     "nav": {
       "overview": "Übersicht",
       "links": "Meine Links",
+      "analytics": "Analytik",
       "profile": "Profil"
     },
     "title": {
       "overview": "Übersicht",
       "links": "Meine Links",
+      "analytics": "Analytik",
       "profile": "Profil"
     },
     "logout": "Abmelden",
@@ -134,6 +136,10 @@
       "title": "Noch keine Links",
       "subtitle": "Erstellen Sie Ihren ersten Kurzlink, um zu beginnen",
       "button": "+ Ersten Link erstellen"
+    },
+    "analytics": {
+      "title": "Analytik",
+      "subtitle": "Detaillierte Statistiken für Ihre Links"
     }
   }
 }

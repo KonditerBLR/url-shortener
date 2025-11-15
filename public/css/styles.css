@@ -515,9 +515,19 @@ body.dark-theme .input-wrapper {
     border-radius: 12px;
     outline: none;
     color: var(--text-dark);
+    background: var(--bg-light);
+}
+
+body.dark-theme .hero-input {
+    background: #1a202c;
+    color: var(--text-dark);
 }
 
 .hero-input::placeholder {
+    color: var(--text-light);
+}
+
+body.dark-theme .hero-input::placeholder {
     color: var(--text-light);
 }
 
