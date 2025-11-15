@@ -5,16 +5,13 @@ require('dotenv').config();
 
 async function runMigrations() {
   const client = new Client({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'urlshortener'
+    connectionString: process.env.DATABASE_URL
   });
 
   try {
     await client.connect();
     console.log('✓ Connected to database');
+    console.log('  Database:', process.env.DATABASE_URL.split('/').pop().split('?')[0]);
 
     // Create migrations table if it doesn't exist
     await client.query(`
@@ -34,6 +31,9 @@ async function runMigrations() {
 
     console.log(`\nFound ${files.length} migration files\n`);
 
+    let executedCount = 0;
+    let skippedCount = 0;
+
     // Execute each migration
     for (const file of files) {
       // Check if already executed
@@ -44,6 +44,7 @@ async function runMigrations() {
 
       if (result.rows.length > 0) {
         console.log(`⊘ Skipping ${file} (already executed)`);
+        skippedCount++;
         continue;
       }
 
@@ -60,6 +61,7 @@ async function runMigrations() {
         );
         await client.query('COMMIT');
         console.log(`✓ Executed ${file}`);
+        executedCount++;
       } catch (err) {
         await client.query('ROLLBACK');
         console.error(`✗ Failed to execute ${file}:`);
@@ -68,10 +70,12 @@ async function runMigrations() {
       }
     }
 
-    console.log('\n✓ All migrations completed successfully!');
+    console.log(`\n✓ All migrations completed successfully!`);
+    console.log(`  Executed: ${executedCount}`);
+    console.log(`  Skipped: ${skippedCount}`);
   } catch (error) {
     console.error('\n✗ Migration error:');
-    console.error(error);
+    console.error(error.message);
     process.exit(1);
   } finally {
     await client.end();
