@@ -580,4 +580,4 @@ function changePassword() {
 function logout() {
     localStorage.removeItem('token');
     window.location.href = '/';
-} а
+}
