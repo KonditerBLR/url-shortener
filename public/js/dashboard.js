@@ -483,17 +483,56 @@ async function showLinks() {
     }
 }
 
-function filterLinks() {
-    const query = document.getElementById('linkSearch').value.toLowerCase();
+// Render tag filters
+function renderTagFilters() {
+    const container = document.getElementById('tagsFilter');
+    if (!container) return;
 
-    if (!query) {
-        filteredLinksData = [...allLinksData];
-    } else {
-        filteredLinksData = allLinksData.filter(link =>
-            link.short_code.toLowerCase().includes(query) ||
-            link.original_url.toLowerCase().includes(query)
-        );
+    if (allTags.length === 0) {
+        container.innerHTML = '';
+        return;
     }
+
+    container.innerHTML = `
+        <div class="tag-filters">
+            <button class="tag-filter ${!selectedTagFilter ? 'active' : ''}"
+                    onclick="filterByTag(null)">
+                All
+            </button>
+            ${allTags.map(tag => `
+                <button class="tag-filter ${selectedTagFilter === tag.id ? 'active' : ''}"
+                        onclick="filterByTag(${tag.id})"
+                        style="--tag-color: ${tag.color}">
+                    ${tag.name}
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Filter by tag
+function filterByTag(tagId) {
+    selectedTagFilter = tagId;
+    renderTagFilters();
+    filterLinks();
+}
+
+function filterLinks() {
+    const query = document.getElementById('linkSearch')?.value.toLowerCase() || '';
+
+    filteredLinksData = allLinksData.filter(link => {
+        // Text search filter
+        const matchesSearch = !query ||
+            link.short_code.toLowerCase().includes(query) ||
+            link.original_url.toLowerCase().includes(query);
+
+        // Tag filter
+        const matchesTag = !selectedTagFilter ||
+            (link.tags && Array.isArray(link.tags) &&
+             link.tags.some(t => t.id === selectedTagFilter));
+
+        return matchesSearch && matchesTag;
+    });
 
     sortLinks();
 }
