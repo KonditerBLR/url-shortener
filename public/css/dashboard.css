@@ -854,3 +854,48 @@ body[data-theme="dark"] .btn-action[title]::after {
         opacity: 1;
     }
 }
+
+/* ===== FIX ANALYTICS OVERFLOW ===== */
+.analytics-section {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.charts-grid {
+    width: 100%;
+    max-width: 100%;
+}
+
+.chart-card {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.chart-card canvas {
+    max-width: 100%;
+}
+
+.analytics-table {
+    overflow-x: auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .chart-card {
+        margin: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .analytics-table th,
+    .analytics-table td {
+        font-size: 11px;
+        padding: 6px;
+    }
+}

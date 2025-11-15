@@ -156,5 +156,19 @@
       "subtitle": "Erstellen Sie Ihren ersten Kurzlink, um zu beginnen",
       "button": "+ Ersten Link erstellen"
     }
+    },
+    "analytics": {
+      "clicks_timeline": "Klicks im Zeitverlauf",
+      "devices": "Geräte",
+      "browsers": "Browser",
+      "operating_systems": "Betriebssysteme",
+      "top_referrers": "Top-Quellen",
+      "top_countries": "Top-Länder",
+      "no_data": "Keine Daten verfügbar",
+      "source": "Quelle",
+      "country": "Land",
+      "clicks": "Klicks",
+      "last_30_days": "Letzte 30 Tage"
+    }
   }
 }

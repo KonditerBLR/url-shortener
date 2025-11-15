@@ -385,37 +385,37 @@ async function showAnalytics() {
             <div class="charts-grid">
                 <!-- Clicks Timeline Chart -->
                 <div class="chart-card">
-                    <h3>Clicks Over Time</h3>
+                    <h3 data-lang="analytics.clicks_timeline">Clicks Over Time</h3>
                     <canvas id="clicksChart"></canvas>
                 </div>
 
                 <!-- Devices Chart -->
                 <div class="chart-card">
-                    <h3>Devices</h3>
+                    <h3 data-lang="analytics.devices">Devices</h3>
                     <canvas id="devicesChart"></canvas>
                 </div>
 
                 <!-- Browsers Chart -->
                 <div class="chart-card">
-                    <h3>Browsers</h3>
+                    <h3 data-lang="analytics.browsers">Browsers</h3>
                     <canvas id="browsersChart"></canvas>
                 </div>
 
                 <!-- OS Chart -->
                 <div class="chart-card">
-                    <h3>Operating Systems</h3>
+                    <h3 data-lang="analytics.operating_systems">Operating Systems</h3>
                     <canvas id="osChart"></canvas>
                 </div>
 
                 <!-- Referrers Table -->
                 <div class="chart-card">
-                    <h3>Top Referrers</h3>
+                    <h3 data-lang="analytics.top_referrers">Top Referrers</h3>
                     <div id="referrersTable"></div>
                 </div>
 
                 <!-- Geography Table -->
                 <div class="chart-card">
-                    <h3>Top Countries</h3>
+                    <h3 data-lang="analytics.top_countries">Top Countries</h3>
                     <div id="geoTable"></div>
                 </div>
             </div>
@@ -423,6 +423,7 @@ async function showAnalytics() {
     `;
 
     await loadAnalyticsData();
+    updatePageLanguage();
 }
 
 // Загрузка данных аналитики
@@ -499,7 +500,7 @@ function renderClicksChart(data) {
 function renderDevicesChart(data) {
     const ctx = document.getElementById('devicesChart');
     if (!ctx || data.length === 0) {
-        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
         return;
     }
 
@@ -523,7 +524,7 @@ function renderDevicesChart(data) {
 function renderBrowsersChart(data) {
     const ctx = document.getElementById('browsersChart');
     if (!ctx || data.length === 0) {
-        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
         return;
     }
 
@@ -554,7 +555,7 @@ function renderBrowsersChart(data) {
 function renderOSChart(data) {
     const ctx = document.getElementById('osChart');
     if (!ctx || data.length === 0) {
-        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
         return;
     }
 
@@ -587,7 +588,7 @@ function renderReferrersTable(data) {
     if (!container) return;
 
     if (data.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        container.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
         return;
     }
 
@@ -595,8 +596,8 @@ function renderReferrersTable(data) {
         <table class="analytics-table">
             <thead>
                 <tr>
-                    <th>Source</th>
-                    <th>Clicks</th>
+                    <th>${t('analytics.source')}</th>
+                    <th>${t('analytics.clicks')}</th>
                 </tr>
             </thead>
             <tbody>
@@ -617,7 +618,7 @@ function renderGeoTable(data) {
     if (!container) return;
 
     if (data.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        container.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
         return;
     }
 
@@ -625,8 +626,8 @@ function renderGeoTable(data) {
         <table class="analytics-table">
             <thead>
                 <tr>
-                    <th>Country</th>
-                    <th>Clicks</th>
+                    <th>${t('analytics.country')}</th>
+                    <th>${t('analytics.clicks')}</th>
                 </tr>
             </thead>
             <tbody>

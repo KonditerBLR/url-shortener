@@ -156,5 +156,19 @@
       "subtitle": "Create your first short link to get started",
       "button": "+ Create Your First Link"
     }
+    },
+    "analytics": {
+      "clicks_timeline": "Clicks Over Time",
+      "devices": "Devices",
+      "browsers": "Browsers",
+      "operating_systems": "Operating Systems",
+      "top_referrers": "Top Referrers",
+      "top_countries": "Top Countries",
+      "no_data": "No data available",
+      "source": "Source",
+      "country": "Country",
+      "clicks": "Clicks",
+      "last_30_days": "Last 30 days"
+    }
   }
 }
