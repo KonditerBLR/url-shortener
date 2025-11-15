@@ -12,17 +12,17 @@ router.post('/register', async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ error: 'Email и пароль обязательны' });
+            return res.status(400).json({ error: 'Email and password are required' });
         }
 
         if (password.length < 8) {
-            return res.status(400).json({ error: 'Пароль должен быть минимум 8 символов' });
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
         }
 
         // Проверяем, существует ли пользователь
         const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+            return res.status(400).json({ error: 'User with this email already exists' });
         }
 
         // Хешируем пароль
@@ -45,13 +45,13 @@ router.post('/register', async (req, res) => {
         // Не создаём токен - пользователь должен сначала подтвердить email
         res.json({
             success: true,
-            message: 'Регистрация успешна! Проверьте вашу почту для подтверждения email.',
+            message: 'Registration successful! Check your email to verify your account.',
             needsVerification: true
         });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -61,13 +61,13 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ error: 'Email и пароль обязательны' });
+            return res.status(400).json({ error: 'Email and password are required' });
         }
 
         // Ищем пользователя
         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Неверный email или пароль' });
+            return res.status(400).json({ error: 'Invalid email or password' });
         }
 
         const user = result.rows[0];
@@ -75,12 +75,12 @@ router.post('/login', async (req, res) => {
         // Проверяем пароль
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
-            return res.status(400).json({ error: 'Неверный email или пароль' });
+            return res.status(400).json({ error: 'Invalid email or password' });
         }
 
         // Проверяем, подтверждён ли email
         if (!user.email_verified) {
-            return res.status(400).json({ error: 'Пожалуйста, подтвердите ваш email. Проверьте почту.' });
+            return res.status(400).json({ error: 'Please verify your email. Check your inbox.' });
         }
 
         // Создаём JWT токен
@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
         res.json({ success: true, token, user: { id: user.id, email: user.email } });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -99,12 +99,12 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'Токен не предоставлен' });
+        return res.status(401).json({ error: 'Token not provided' });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'Недействительный токен' });
+            return res.status(403).json({ error: 'Invalid token' });
         }
         req.user = user;
         next();
@@ -117,7 +117,7 @@ router.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(400).json({ error: 'Email обязателен' });
+            return res.status(400).json({ error: 'Email is required' });
         }
 
         // Проверяем, существует ли пользователь
@@ -125,7 +125,7 @@ router.post('/forgot-password', async (req, res) => {
 
         if (result.rows.length === 0) {
             // Не говорим пользователю, что email не найден (безопасность)
-            return res.json({ success: true, message: 'Если email существует, письмо будет отправлено' });
+            return res.json({ success: true, message: 'If the email exists, a password reset link will be sent' });
         }
 
         const user = result.rows[0];
@@ -143,10 +143,10 @@ router.post('/forgot-password', async (req, res) => {
         // Отправляем email
         await sendPasswordResetEmail(email, resetToken);
 
-        res.json({ success: true, message: 'Письмо с инструкциями отправлено на ваш email' });
+        res.json({ success: true, message: 'Password reset instructions sent to your email' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -156,11 +156,11 @@ router.post('/reset-password', async (req, res) => {
         const { token, password } = req.body;
 
         if (!token || !password) {
-            return res.status(400).json({ error: 'Токен и пароль обязательны' });
+            return res.status(400).json({ error: 'Token and password are required' });
         }
 
         if (password.length < 8) {
-            return res.status(400).json({ error: 'Пароль должен быть минимум 8 символов' });
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
         }
 
         // Ищем пользователя с валидным токеном
@@ -170,7 +170,7 @@ router.post('/reset-password', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Недействительный или истёкший токен' });
+            return res.status(400).json({ error: 'Invalid or expired token' });
         }
 
         const user = result.rows[0];
@@ -184,10 +184,10 @@ router.post('/reset-password', async (req, res) => {
             [passwordHash, user.id]
         );
 
-        res.json({ success: true, message: 'Пароль успешно изменён' });
+        res.json({ success: true, message: 'Password successfully changed' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -197,7 +197,7 @@ router.get('/verify-email', async (req, res) => {
         const { token } = req.query;
 
         if (!token) {
-            return res.status(400).json({ error: 'Токен не указан' });
+            return res.status(400).json({ error: 'Token not provided' });
         }
 
         // Ищем пользователя с этим токеном
@@ -207,7 +207,7 @@ router.get('/verify-email', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Недействительный токен' });
+            return res.status(400).json({ error: 'Invalid token' });
         }
 
         const user = result.rows[0];
@@ -227,7 +227,7 @@ router.get('/verify-email', async (req, res) => {
         res.redirect('/?message=email_verified');
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 

@@ -103,15 +103,55 @@ router.post('/shorten', optionalAuth, async (req, res) => {
 router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     const result = await db.query(
       'SELECT id, original_url, short_code, clicks, created_at FROM urls WHERE user_id = $1 ORDER BY created_at DESC',
       [userId]
     );
-    
+
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching user URLs:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get aggregated statistics for user's dashboard
+router.get('/stats/summary', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Get all user's URLs
+    const urlsResult = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+
+    if (urlsResult.rows.length === 0) {
+      return res.json({
+        totalClicksToday: 0,
+        totalClicksMonth: 0
+      });
+    }
+
+    const urlIds = urlsResult.rows.map(row => row.id);
+
+    // Get aggregated click statistics
+    const statsResult = await db.query(
+      `SELECT
+        COUNT(*) FILTER (WHERE clicked_at > NOW() - INTERVAL '1 day') as clicks_today,
+        COUNT(*) FILTER (WHERE clicked_at > NOW() - INTERVAL '30 days') as clicks_month
+       FROM clicks
+       WHERE url_id = ANY($1)`,
+      [urlIds]
+    );
+
+    res.json({
+      totalClicksToday: parseInt(statsResult.rows[0].clicks_today) || 0,
+      totalClicksMonth: parseInt(statsResult.rows[0].clicks_month) || 0
+    });
+  } catch (error) {
+    console.error('Error fetching summary stats:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

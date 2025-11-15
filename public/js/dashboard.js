@@ -146,28 +146,25 @@ async function loadOverviewData() {
         return;
     }
 
-    // Загружаем детальную статистику
+    // Загружаем агрегированную статистику одним запросом
     const token = localStorage.getItem('token');
     let totalClicksToday = 0;
     let totalClicksMonth = 0;
 
-    // Получаем статистику по каждой ссылке
-    for (const link of links) {
-        try {
-            const response = await fetch(`/api/urls/${link.id}/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const stats = await response.json();
-                totalClicksToday += parseInt(stats.total.clicks_today) || 0;
-                totalClicksMonth += parseInt(stats.total.clicks_month) || 0;
+    try {
+        const response = await fetch('/api/stats/summary', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-        } catch (error) {
-            console.error('Error loading stats for link:', link.id, error);
+        });
+
+        if (response.ok) {
+            const stats = await response.json();
+            totalClicksToday = stats.totalClicksToday || 0;
+            totalClicksMonth = stats.totalClicksMonth || 0;
         }
+    } catch (error) {
+        console.error('Error loading summary stats:', error);
     }
 
     // Базовая статистика
@@ -189,7 +186,13 @@ async function loadOverviewData() {
     document.getElementById('totalLinks').textContent = totalLinks;
     document.getElementById('totalClicks').textContent = totalClicks.toLocaleString();
     document.getElementById('avgClicks').textContent = avgClicks;
-    document.getElementById('topLinkClicks').textContent = topLink.clicks;
+
+    // Исправляем ошибку с топ-ссылкой
+    if (topLink) {
+        document.getElementById('topLinkClicks').textContent = topLink.clicks;
+    } else {
+        document.getElementById('topLinkClicks').textContent = 0;
+    }
 
     // Обновляем подписи с динамическими цифрами
     const monthText = currentLang === 'ru' ? 'в этом месяце' :
