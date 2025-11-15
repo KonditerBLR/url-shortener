@@ -229,12 +229,37 @@ router.get('/urls/:id/stats', authenticateToken, async (req, res) => {
       [id]
     );
 
+    // Статистика по источникам трафика (referrers)
+    const referrerStats = await db.query(
+      `SELECT
+        CASE
+          WHEN referrer IS NULL OR referrer = '' THEN 'Direct'
+          WHEN referrer LIKE '%google.%' THEN 'Google'
+          WHEN referrer LIKE '%facebook.%' THEN 'Facebook'
+          WHEN referrer LIKE '%twitter.%' OR referrer LIKE '%t.co%' THEN 'Twitter'
+          WHEN referrer LIKE '%linkedin.%' THEN 'LinkedIn'
+          WHEN referrer LIKE '%instagram.%' THEN 'Instagram'
+          WHEN referrer LIKE '%youtube.%' THEN 'YouTube'
+          WHEN referrer LIKE '%reddit.%' THEN 'Reddit'
+          WHEN referrer LIKE '%github.%' THEN 'GitHub'
+          ELSE 'Other'
+        END as source,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1 ${timeFilter}
+       GROUP BY source
+       ORDER BY count DESC
+       LIMIT 10`,
+      [id]
+    );
+
     res.json({
       total: totalStats.rows[0],
       devices: deviceStats.rows,
       os: osStats.rows,
       browsers: browserStats.rows,
       daily: dailyStats.rows,
+      referrers: referrerStats.rows,
       period: period
     });
   } catch (error) {

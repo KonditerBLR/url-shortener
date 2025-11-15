@@ -712,6 +712,13 @@ async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
                     <canvas id="browsersChart"></canvas>
                 </div>
                 ` : ''}
+
+                ${stats.referrers && stats.referrers.length > 0 ? `
+                <div class="chart-card">
+                    <h4>🔗 Traffic Sources</h4>
+                    <canvas id="referrersChart"></canvas>
+                </div>
+                ` : ''}
             </div>
         `;
 
@@ -827,6 +834,24 @@ function createAnalyticsCharts(stats) {
                     datasets: [{
                         data: stats.browsers.map(b => parseInt(b.count)),
                         backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6']
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
+    }
+
+    // Referrers (Traffic Sources) doughnut chart
+    if (stats.referrers && stats.referrers.length > 0) {
+        const ctx = document.getElementById('referrersChart');
+        if (ctx) {
+            analyticsCharts.referrers = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.referrers.map(r => r.source || 'Unknown'),
+                    datasets: [{
+                        data: stats.referrers.map(r => parseInt(r.count)),
+                        backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#06b6d4', '#84cc16']
                     }]
                 },
                 options: chartDefaults
