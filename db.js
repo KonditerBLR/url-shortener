@@ -1,17 +1,29 @@
 const { Pool } = require('pg');
+require('dotenv').config(); // Load environment variables FIRST
+
+console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Test database connection
+// Test database connection on startup
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Database connection failed:', err.message);
+    console.error('Connection string:', process.env.DATABASE_URL);
+  } else {
+    console.log('✅ Connected to PostgreSQL database');
+    console.log('Server time:', res.rows[0].now);
+  }
+});
+
 pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
+  console.log('✅ PostgreSQL client connected');
 });
 
 pool.on('error', (err) => {
   console.error('❌ Unexpected error on idle database client', err);
-  process.exit(-1);
 });
 
 module.exports = {

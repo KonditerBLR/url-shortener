@@ -86,16 +86,38 @@ function updatePageLanguage() {
 function updateAuthModalLanguage() {
     if (typeof isLoginMode === 'undefined') return;
 
-    document.getElementById('modalTitle').textContent = isLoginMode ? t('auth.login_title') : t('auth.register_title');
-    document.querySelector('[for="authEmail"]').textContent = t('auth.email_label');
-    document.getElementById('authEmail').setAttribute('placeholder', t('auth.email_placeholder'));
-    document.querySelector('[for="authPassword"]').textContent = t('auth.password_label');
-    document.getElementById('authPassword').setAttribute('placeholder', t('auth.password_placeholder'));
-    document.querySelector('[for="authPasswordConfirm"]').textContent = t('auth.password_confirm_label');
-    document.getElementById('authPasswordConfirm').setAttribute('placeholder', t('auth.password_confirm_placeholder'));
-    document.getElementById('authSubmitBtn').textContent = isLoginMode ? t('auth.login_button') : t('auth.register_button');
-    document.getElementById('switchBtn').textContent = isLoginMode ? t('auth.switch_to_register') : t('auth.switch_to_login');
-    document.getElementById('forgotPasswordBtn').textContent = t('auth.forgot_password');
+    // Check if auth modal elements exist (they're only on landing page)
+    const modalTitle = document.getElementById('modalTitle');
+    if (!modalTitle) return; // Exit if modal doesn't exist on this page
+
+    modalTitle.textContent = isLoginMode ? t('auth.login_title') : t('auth.register_title');
+
+    const emailLabel = document.querySelector('[for="authEmail"]');
+    if (emailLabel) emailLabel.textContent = t('auth.email_label');
+
+    const authEmail = document.getElementById('authEmail');
+    if (authEmail) authEmail.setAttribute('placeholder', t('auth.email_placeholder'));
+
+    const passwordLabel = document.querySelector('[for="authPassword"]');
+    if (passwordLabel) passwordLabel.textContent = t('auth.password_label');
+
+    const authPassword = document.getElementById('authPassword');
+    if (authPassword) authPassword.setAttribute('placeholder', t('auth.password_placeholder'));
+
+    const confirmLabel = document.querySelector('[for="authPasswordConfirm"]');
+    if (confirmLabel) confirmLabel.textContent = t('auth.password_confirm_label');
+
+    const authPasswordConfirm = document.getElementById('authPasswordConfirm');
+    if (authPasswordConfirm) authPasswordConfirm.setAttribute('placeholder', t('auth.password_confirm_placeholder'));
+
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    if (authSubmitBtn) authSubmitBtn.textContent = isLoginMode ? t('auth.login_button') : t('auth.register_button');
+
+    const switchBtn = document.getElementById('switchBtn');
+    if (switchBtn) switchBtn.textContent = isLoginMode ? t('auth.switch_to_register') : t('auth.switch_to_login');
+
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    if (forgotPasswordBtn) forgotPasswordBtn.textContent = t('auth.forgot_password');
 }
 
 // Update current language display
