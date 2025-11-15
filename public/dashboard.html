@@ -216,6 +216,38 @@
         </div>
     </div>
 
+    <!-- Tags Manager Modal -->
+    <div class="modal" id="tagsManagerModal">
+        <div class="modal-overlay" onclick="closeTagsManager()"></div>
+        <div class="modal-content modal-large">
+            <button class="modal-close" onclick="closeTagsManager()">×</button>
+            <h2>Manage Tags</h2>
+
+            <div class="tag-manager">
+                <div class="tag-manager-header">
+                    <div class="tag-input-group">
+                        <input type="text"
+                               id="newTagName"
+                               class="tag-name-input"
+                               placeholder="Tag name..."
+                               maxlength="50">
+                        <input type="color"
+                               id="newTagColor"
+                               class="tag-color-input"
+                               value="#6366f1">
+                    </div>
+                    <button class="btn-add-tag" onclick="handleCreateTag()">
+                        + Add Tag
+                    </button>
+                </div>
+
+                <div class="tags-list" id="tagsListContainer">
+                    <!-- Tags will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 

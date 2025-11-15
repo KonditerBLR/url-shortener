@@ -407,6 +407,101 @@ async function removeTagFromLink(urlId, tagId) {
     return false;
 }
 
+// ===== TAGS MANAGER MODAL =====
+
+// Show tags manager modal
+function showTagsManager() {
+    document.getElementById('tagsManagerModal').classList.add('show');
+    renderTagsList();
+}
+
+// Close tags manager modal
+function closeTagsManager() {
+    document.getElementById('tagsManagerModal').classList.remove('show');
+    document.getElementById('newTagName').value = '';
+    document.getElementById('newTagColor').value = '#6366f1';
+}
+
+// Handle create tag button
+async function handleCreateTag() {
+    const nameInput = document.getElementById('newTagName');
+    const colorInput = document.getElementById('newTagColor');
+
+    const name = nameInput.value.trim();
+    const color = colorInput.value;
+
+    if (!name) {
+        toast.warning('Please enter a tag name');
+        nameInput.focus();
+        return;
+    }
+
+    const newTag = await createTag(name, color);
+    if (newTag) {
+        nameInput.value = '';
+        colorInput.value = '#6366f1';
+        renderTagsList();
+        renderTagFilters(); // Update filters
+    }
+}
+
+// Render tags list in manager
+function renderTagsList() {
+    const container = document.getElementById('tagsListContainer');
+    if (!container) return;
+
+    if (allTags.length === 0) {
+        container.innerHTML = `
+            <div class="tags-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+                <p>No tags yet. Create your first tag!</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Count links for each tag
+    const tagCounts = {};
+    allLinksData.forEach(link => {
+        if (link.tags && Array.isArray(link.tags)) {
+            link.tags.forEach(tag => {
+                tagCounts[tag.id] = (tagCounts[tag.id] || 0) + 1;
+            });
+        }
+    });
+
+    container.innerHTML = allTags.map(tag => `
+        <div class="tag-item">
+            <div class="tag-item-color" style="background-color: ${tag.color}"></div>
+            <div class="tag-item-name">${tag.name}</div>
+            <div class="tag-item-count">${tagCounts[tag.id] || 0} links</div>
+            <button class="btn-delete-tag" onclick="handleDeleteTag(${tag.id})" title="Delete tag">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Handle delete tag
+async function handleDeleteTag(tagId) {
+    if (!confirm('Are you sure you want to delete this tag? It will be removed from all links.')) {
+        return;
+    }
+
+    const success = await deleteTag(tagId);
+    if (success) {
+        renderTagsList();
+        renderTagFilters();
+        // Reload links to update the display
+        await showLinks();
+    }
+}
+
 async function showLinks() {
     const content = document.getElementById('dashboardContent');
     content.innerHTML = `
