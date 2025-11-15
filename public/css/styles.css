@@ -1675,6 +1675,72 @@ body.dark-theme .cta {
     background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
 }
 
+/* Dark theme for navigation elements */
+body.dark-theme .lang-menu {
+    background: #2d3748;
+    border-color: #1a202c;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .lang-option {
+    color: var(--text-gray);
+}
+
+body.dark-theme .lang-option:hover {
+    background: #1a202c;
+}
+
+body.dark-theme .lang-option.active {
+    background: #1a202c;
+    color: var(--primary);
+}
+
+body.dark-theme .lang-current {
+    background: #1a202c;
+    border-color: #2d3748;
+    color: var(--text-gray);
+}
+
+body.dark-theme .lang-current:hover {
+    border-color: var(--primary);
+}
+
+/* Dark theme for sections */
+body.dark-theme .stats {
+    background: #1a202c;
+}
+
+body.dark-theme .how-it-works {
+    background: #0d1117;
+}
+
+body.dark-theme .features {
+    background: #1a202c;
+}
+
+body.dark-theme .testimonials {
+    background: #0d1117;
+}
+
+body.dark-theme .testimonial-card {
+    background: #2d3748;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .testimonial-card:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .step-card h3,
+body.dark-theme .feature-card h3 {
+    color: var(--text-dark);
+}
+
+body.dark-theme .step-card p,
+body.dark-theme .feature-card p {
+    color: var(--text-gray);
+}
+
 /* ===== ADVANCED LINK CREATION ===== */
 .modal-large {
     max-width: 600px !important;

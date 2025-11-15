@@ -675,6 +675,20 @@ body.dark-theme .api-keys-table code {
     color: #adb5bd;
 }
 
+/* Dark theme for webhooks table */
+body.dark-theme .webhooks-table thead {
+    background: rgba(255,255,255,0.05);
+}
+
+body.dark-theme .webhooks-table tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+body.dark-theme .webhooks-table code {
+    background: rgba(255,255,255,0.1);
+    color: #adb5bd;
+}
+
 .status-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -2582,6 +2596,100 @@ body.dark-theme .tag-selector-color {
 
 body.dark-theme .tag-selector-name {
     color: var(--text-dark);
+}
+
+/* Dark theme for empty states */
+body.dark-theme .empty-state {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+body.dark-theme .empty-state h3 {
+    color: var(--text-dark);
+}
+
+body.dark-theme .empty-state p {
+    color: var(--text-gray);
+}
+
+body.dark-theme .empty-state svg {
+    opacity: 0.6;
+}
+
+/* Dark theme for time filter */
+body.dark-theme .time-filter-btn {
+    color: var(--text-gray);
+    background: transparent;
+}
+
+body.dark-theme .time-filter-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+body.dark-theme .time-filter-btn:hover:not(.active) {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* Dark theme for tag filter buttons */
+body.dark-theme .tag-filter {
+    color: var(--text-gray);
+}
+
+body.dark-theme .tag-filter.active {
+    background: rgba(102, 126, 234, 0.2);
+    color: var(--primary);
+}
+
+body.dark-theme .tag-filter:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Dark theme for modals in dashboard */
+body.dark-theme .modal {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+body.dark-theme .modal-content {
+    background: #2d3748;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-theme .modal-content h2 {
+    color: var(--text-dark);
+}
+
+body.dark-theme .modal-close {
+    color: var(--text-gray);
+}
+
+body.dark-theme .modal-close:hover {
+    color: var(--text-dark);
+}
+
+/* Dark theme for input groups in dashboard */
+body.dark-theme .input-group label {
+    color: var(--text-gray);
+}
+
+body.dark-theme .input-group input,
+body.dark-theme .input-group textarea,
+body.dark-theme .input-group select {
+    background: #1a202c;
+    border-color: #2d3748;
+    color: var(--text-dark);
+}
+
+body.dark-theme .input-group input:focus,
+body.dark-theme .input-group textarea:focus,
+body.dark-theme .input-group select:focus {
+    border-color: var(--primary);
+    background: #1a202c;
+}
+
+body.dark-theme .input-group input::placeholder,
+body.dark-theme .input-group textarea::placeholder {
+    color: #718096;
 }
 
 .tag-selector-icon {
