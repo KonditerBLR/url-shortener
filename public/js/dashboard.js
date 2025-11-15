@@ -299,6 +299,45 @@ let currentSort = { field: 'created_at', order: 'desc' };
 let allTags = [];
 let selectedTagFilter = null;
 
+// ===== STARRED MANAGEMENT =====
+let showOnlyStarred = false;
+
+// Toggle starred status
+async function toggleStarred(urlId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/starred`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.is_starred = data.is_starred;
+            }
+            // Refresh display
+            filterLinks();
+            toast.success(data.is_starred ? 'Added to favorites' : 'Removed from favorites');
+        }
+    } catch (error) {
+        console.error('Error toggling starred:', error);
+        toast.error('Failed to update favorites');
+    }
+}
+
+// Toggle starred filter
+function toggleStarredFilter() {
+    showOnlyStarred = !showOnlyStarred;
+    const btn = document.getElementById('starredFilterBtn');
+    if (btn) {
+        btn.classList.toggle('active', showOnlyStarred);
+    }
+    filterLinks();
+}
+
 // Load all tags
 async function loadTags() {
     try {
@@ -509,6 +548,12 @@ async function showLinks() {
             <div class="section-header">
                 <h2 class="section-title" data-lang="dashboard.all_links">All Links</h2>
                 <div class="header-actions">
+                    <button class="btn-secondary" id="starredFilterBtn" onclick="toggleStarredFilter()" title="Show only favorites">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        Favorites
+                    </button>
                     <button class="btn-secondary" onclick="showTagsManager()" title="Manage Tags">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
@@ -626,7 +671,10 @@ function filterLinks() {
             (link.tags && Array.isArray(link.tags) &&
              link.tags.some(t => t.id === selectedTagFilter));
 
-        return matchesSearch && matchesTag;
+        // Starred filter
+        const matchesStarred = !showOnlyStarred || link.is_starred;
+
+        return matchesSearch && matchesTag && matchesStarred;
     });
 
     sortLinks();
@@ -717,6 +765,13 @@ function renderLinksTable(links, containerId) {
                         <td>${new Date(link.created_at).toLocaleDateString()}</td>
                         <td>
                             <div class="link-actions">
+                                <button class="btn-action btn-star ${link.is_starred ? 'starred' : ''}"
+                                        onclick="toggleStarred(${link.id})"
+                                        title="${link.is_starred ? 'Remove from favorites' : 'Add to favorites'}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="${link.is_starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                </button>
                                 <button class="btn-action" onclick="copyLink('${link.short_code}', event)" title="Copy">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>

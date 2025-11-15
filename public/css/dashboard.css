@@ -341,6 +341,42 @@ body.dark-theme .sidebar {
     background: var(--error);
 }
 
+.btn-action.btn-star {
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+}
+
+.btn-action.btn-star:hover {
+    background: #fef3c7;
+    color: #f59e0b;
+    transform: scale(1.1);
+}
+
+.btn-action.btn-star.starred {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+.btn-action.btn-star.starred:hover {
+    background: #fde68a;
+    transform: scale(1.1);
+}
+
+/* Dark theme for star button */
+body.dark-theme .btn-action.btn-star:hover {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+body.dark-theme .btn-action.btn-star.starred {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+body.dark-theme .btn-action.btn-star.starred:hover {
+    background: rgba(251, 191, 36, 0.3);
+}
+
 .empty-state {
     padding: 80px 24px;
     text-align: center;
@@ -1098,6 +1134,16 @@ body.dark-theme .stat-icon {
     border-color: var(--primary);
     color: var(--primary);
     transform: translateY(-1px);
+}
+
+.btn-secondary.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-color: var(--primary);
+    color: white;
+}
+
+.btn-secondary.active svg {
+    fill: currentColor;
 }
 
 body.dark-theme .btn-secondary {
