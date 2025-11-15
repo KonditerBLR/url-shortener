@@ -717,4 +717,132 @@ router.get('/stats/analytics/geo', authenticateToken, async (req, res) => {
   }
 });
 
+// Получить детальную аналитику конкретной ссылки
+router.get('/stats/analytics/link/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const linkId = req.params.id;
+
+    // Проверяем что ссылка принадлежит пользователю
+    const urlCheck = await db.query(
+      'SELECT * FROM urls WHERE id = $1 AND user_id = $2',
+      [linkId, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    const linkData = urlCheck.rows[0];
+
+    // Получаем клики по дням (последние 30 дней)
+    const timeline = await db.query(
+      `SELECT
+        DATE(clicked_at) as date,
+        COUNT(*) as clicks
+       FROM clicks
+       WHERE url_id = $1 AND clicked_at > NOW() - INTERVAL '30 days'
+       GROUP BY DATE(clicked_at)
+       ORDER BY date ASC`,
+      [linkId]
+    );
+
+    // Устройства
+    const devices = await db.query(
+      `SELECT device_type, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1
+       GROUP BY device_type
+       ORDER BY count DESC`,
+      [linkId]
+    );
+
+    // Браузеры
+    const browsers = await db.query(
+      `SELECT browser, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1
+       GROUP BY browser
+       ORDER BY count DESC
+       LIMIT 10`,
+      [linkId]
+    );
+
+    // ОС
+    const os = await db.query(
+      `SELECT os, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1
+       GROUP BY os
+       ORDER BY count DESC
+       LIMIT 10`,
+      [linkId]
+    );
+
+    // Источники
+    const referrers = await db.query(
+      `SELECT
+        CASE
+          WHEN referrer IS NULL OR referrer = '' THEN 'Direct'
+          ELSE referrer
+        END as source,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1
+       GROUP BY source
+       ORDER BY count DESC
+       LIMIT 10`,
+      [linkId]
+    );
+
+    // География
+    const countries = await db.query(
+      `SELECT
+        COALESCE(country, 'Unknown') as country,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = $1
+       GROUP BY country
+       ORDER BY count DESC
+       LIMIT 10`,
+      [linkId]
+    );
+
+    // Общая статистика
+    const totalClicks = await db.query(
+      'SELECT COUNT(*) as total FROM clicks WHERE url_id = $1',
+      [linkId]
+    );
+
+    const uniqueClicks = await db.query(
+      'SELECT COUNT(*) as total FROM clicks WHERE url_id = $1 AND is_unique = true',
+      [linkId]
+    );
+
+    res.json({
+      link: {
+        id: linkData.id,
+        short_code: linkData.short_code,
+        original_url: linkData.original_url,
+        title: linkData.title,
+        created_at: linkData.created_at
+      },
+      stats: {
+        total_clicks: parseInt(totalClicks.rows[0].total),
+        unique_clicks: parseInt(uniqueClicks.rows[0].total),
+        click_through_rate: linkData.clicks > 0 ? ((uniqueClicks.rows[0].total / linkData.clicks) * 100).toFixed(2) : 0
+      },
+      timeline: timeline.rows,
+      devices: devices.rows,
+      browsers: browsers.rows,
+      os: os.rows,
+      referrers: referrers.rows,
+      countries: countries.rows
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

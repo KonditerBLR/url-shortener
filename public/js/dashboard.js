@@ -301,6 +301,11 @@ function renderLinksTable(links, containerId) {
                                 <button class="btn-action" onclick="showQR('${link.short_code}')" title="QR Code">
                                     <span style="font-size: 12px; font-weight: 700;">QR</span>
                                 </button>
+                                <button class="btn-action" onclick="showLinkAnalytics(${link.id})" title="View Analytics">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                    </svg>
+                                </button>
                                 <button class="btn-action" onclick="showEditModal(${link.id})" title="Edit">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -418,6 +423,12 @@ async function showAnalytics() {
                     <h3 data-lang="analytics.top_countries">Top Countries</h3>
                     <div id="geoTable"></div>
                 </div>
+
+                <!-- World Map -->
+                <div class="chart-card map-card">
+                    <h3 data-lang="analytics.world_map">Clicks World Map</h3>
+                    <div id="worldMap" style="height: 400px; border-radius: 12px; overflow: hidden;"></div>
+                </div>
             </div>
         </div>
     `;
@@ -458,6 +469,7 @@ async function loadAnalyticsData() {
         renderOSChart(platforms.os || []);
         renderReferrersTable(referrers.referrers || []);
         renderGeoTable(geo.countries || []);
+        renderWorldMap(geo.countries || []);
     } catch (error) {
         console.error('Error loading analytics:', error);
     }
@@ -615,6 +627,348 @@ function renderReferrersTable(data) {
 // Таблица географии
 function renderGeoTable(data) {
     const container = document.getElementById('geoTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>${t('analytics.country')}</th>
+                    <th>${t('analytics.clicks')}</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.country}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Карта мира с геолокацией кликов
+function renderWorldMap(data) {
+    const container = document.getElementById('worldMap');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:var(--text-gray);padding-top:180px;">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    // Координаты стран (основные)
+    const countryCoords = {
+        'United States': [37.0902, -95.7129],
+        'USA': [37.0902, -95.7129],
+        'Russia': [61.5240, 105.3188],
+        'China': [35.8617, 104.1954],
+        'India': [20.5937, 78.9629],
+        'Brazil': [-14.2350, -51.9253],
+        'Germany': [51.1657, 10.4515],
+        'United Kingdom': [55.3781, -3.4360],
+        'UK': [55.3781, -3.4360],
+        'France': [46.2276, 2.2137],
+        'Japan': [36.2048, 138.2529],
+        'Canada': [56.1304, -106.3468],
+        'Australia': [-25.2744, 133.7751],
+        'Spain': [40.4637, -3.7492],
+        'Italy': [41.8719, 12.5674],
+        'Mexico': [23.6345, -102.5528],
+        'South Korea': [35.9078, 127.7669],
+        'Poland': [51.9194, 19.1451],
+        'Ukraine': [48.3794, 31.1656],
+        'Netherlands': [52.1326, 5.2913],
+        'Turkey': [38.9637, 35.2433],
+        'Argentina': [-38.4161, -63.6167],
+        'Belgium': [50.5039, 4.4699],
+        'Sweden': [60.1282, 18.6435],
+        'Switzerland': [46.8182, 8.2275],
+        'Norway': [60.4720, 8.4689],
+        'Austria': [47.5162, 14.5501],
+        'Czech Republic': [49.8175, 15.4730],
+        'Unknown': [0, 0]
+    };
+
+    // Создаем карту
+    const map = L.map('worldMap', {
+        center: [30, 0],
+        zoom: 2,
+        minZoom: 2,
+        maxZoom: 6,
+        zoomControl: true
+    });
+
+    // Добавляем тайлы (светлая тема)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Добавляем маркеры для каждой страны
+    data.forEach(item => {
+        const coords = countryCoords[item.country] || countryCoords['Unknown'];
+        if (coords[0] !== 0 || coords[1] !== 0) {
+            const marker = L.circleMarker(coords, {
+                radius: Math.min(5 + Math.sqrt(item.count) * 2, 25),
+                fillColor: '#667eea',
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <div style="text-align: center; padding: 8px;">
+                    <strong style="color: #667eea; font-size: 16px;">${item.country}</strong><br>
+                    <span style="color: #6b7280; font-size: 14px;">${item.count} ${t('analytics.clicks')}</span>
+                </div>
+            `);
+        }
+    });
+}
+
+// Показать детальную аналитику ссылки
+async function showLinkAnalytics(linkId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`/api/stats/analytics/link/${linkId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            toast.error('Failed to load analytics');
+            return;
+        }
+
+        const data = await response.json();
+
+        // Переключаемся на страницу analytics и обновляем контент
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelector('.nav-item[data-page="analytics"]').classList.add('active');
+        document.getElementById('pageTitle').textContent = `${data.link.title || data.link.short_code} - Analytics`;
+
+        const content = document.getElementById('dashboardContent');
+        content.innerHTML = `
+            <div class="analytics-section">
+                <div class="link-analytics-header">
+                    <div>
+                        <h2 style="color: var(--primary); margin-bottom: 8px;">${data.link.title || data.link.short_code}</h2>
+                        <p style="color: var(--text-gray); font-size: 14px;">${data.link.original_url}</p>
+                    </div>
+                    <button class="btn-create" onclick="showAnalytics()" style="background: var(--text-gray);">
+                        ← Back to All Analytics
+                    </button>
+                </div>
+
+                <div class="stats-cards" style="margin-top: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">${t('dashboard.stats.total_clicks')}</span>
+                            <div class="stat-card-icon">📊</div>
+                        </div>
+                        <div class="stat-card-value">${data.stats.total_clicks}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Unique Clicks</span>
+                            <div class="stat-card-icon">👥</div>
+                        </div>
+                        <div class="stat-card-value">${data.stats.unique_clicks}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Created</span>
+                            <div class="stat-card-icon">📅</div>
+                        </div>
+                        <div class="stat-card-value" style="font-size: 18px;">${new Date(data.link.created_at).toLocaleDateString()}</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid" style="margin-top: 32px;">
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.clicks_timeline">Clicks Over Time</h3>
+                        <canvas id="linkClicksChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.devices">Devices</h3>
+                        <canvas id="linkDevicesChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.browsers">Browsers</h3>
+                        <canvas id="linkBrowsersChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.operating_systems">Operating Systems</h3>
+                        <canvas id="linkOSChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.top_referrers">Top Referrers</h3>
+                        <div id="linkReferrersTable"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 data-lang="analytics.top_countries">Top Countries</h3>
+                        <div id="linkGeoTable"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        updatePageLanguage();
+
+        // Рендерим графики с префиксом link
+        renderLinkClicksChart(data.timeline || []);
+        renderLinkDevicesChart(data.devices || []);
+        renderLinkBrowsersChart(data.browsers || []);
+        renderLinkOSChart(data.os || []);
+        renderLinkReferrersTable(data.referrers || []);
+        renderLinkGeoTable(data.countries || []);
+
+    } catch (error) {
+        console.error('Error loading link analytics:', error);
+        toast.error('Failed to load analytics');
+    }
+}
+
+// Функции рендеринга для аналитики конкретной ссылки
+function renderLinkClicksChart(data) {
+    const ctx = document.getElementById('linkClicksChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => new Date(d.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.clicks)),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderLinkDevicesChart(data) {
+    const ctx = document.getElementById('linkDevicesChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => d.device_type || 'Unknown'),
+            datasets: [{
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: ['#667eea', '#f765a3', '#16aaff', '#ffa16a']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function renderLinkBrowsersChart(data) {
+    const ctx = document.getElementById('linkBrowsersChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.browser || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#f765a3'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderLinkOSChart(data) {
+    const ctx = document.getElementById('linkOSChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.os || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#764ba2'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderLinkReferrersTable(data) {
+    const container = document.getElementById('linkReferrersTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:var(--text-gray);">${t('analytics.no_data')}</p>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>${t('analytics.source')}</th>
+                    <th>${t('analytics.clicks')}</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.source}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderLinkGeoTable(data) {
+    const container = document.getElementById('linkGeoTable');
     if (!container) return;
 
     if (data.length === 0) {
