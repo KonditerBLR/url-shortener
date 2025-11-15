@@ -78,13 +78,9 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Invalid email or password' });
         }
 
-        // Проверяем, подтверждён ли email
-        if (!user.email_verified) {
-            return res.status(400).json({ error: 'Please verify your email. Check your inbox.' });
-        }
-
         // Создаём JWT токен
-        const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+        const jwtSecret = process.env.JWT_SECRET || 'default-secret-key-change-in-production';
+        const token = jwt.sign({ userId: user.id, email: user.email }, jwtSecret, { expiresIn: '30d' });
 
         res.json({ success: true, token, user: { id: user.id, email: user.email } });
     } catch (error) {
@@ -102,7 +98,8 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ error: 'Token not provided' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    const jwtSecret = process.env.JWT_SECRET || 'default-secret-key-change-in-production';
+    jwt.verify(token, jwtSecret, (err, user) => {
         if (err) {
             return res.status(403).json({ error: 'Invalid token' });
         }

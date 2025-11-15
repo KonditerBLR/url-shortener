@@ -158,18 +158,17 @@
     }
   },
   "analytics": {
-      "clicks_timeline": "Клики по времени",
-      "devices": "Устройства",
-      "browsers": "Браузеры",
-      "operating_systems": "Операционные системы",
-      "top_referrers": "Топ источников",
-      "top_countries": "Топ стран",
-      "world_map": "Карта кликов по миру",
-      "no_data": "Нет данных",
-      "source": "Источник",
-      "country": "Страна",
-      "clicks": "Клики",
-      "last_30_days": "Последние 30 дней"
-    }
+    "clicks_timeline": "Клики по времени",
+    "devices": "Устройства",
+    "browsers": "Браузеры",
+    "operating_systems": "Операционные системы",
+    "top_referrers": "Топ источников",
+    "top_countries": "Топ стран",
+    "world_map": "Карта кликов по миру",
+    "no_data": "Нет данных",
+    "source": "Источник",
+    "country": "Страна",
+    "clicks": "Клики",
+    "last_30_days": "Последние 30 дней"
   }
 }

@@ -158,18 +158,17 @@
     }
   },
   "analytics": {
-      "clicks_timeline": "Clicks Over Time",
-      "devices": "Devices",
-      "browsers": "Browsers",
-      "operating_systems": "Operating Systems",
-      "top_referrers": "Top Referrers",
-      "top_countries": "Top Countries",
-      "world_map": "Clicks World Map",
-      "no_data": "No data available",
-      "source": "Source",
-      "country": "Country",
-      "clicks": "Clicks",
-      "last_30_days": "Last 30 days"
-    }
+    "clicks_timeline": "Clicks Over Time",
+    "devices": "Devices",
+    "browsers": "Browsers",
+    "operating_systems": "Operating Systems",
+    "top_referrers": "Top Referrers",
+    "top_countries": "Top Countries",
+    "world_map": "Clicks World Map",
+    "no_data": "No data available",
+    "source": "Source",
+    "country": "Country",
+    "clicks": "Clicks",
+    "last_30_days": "Last 30 days"
   }
 }
