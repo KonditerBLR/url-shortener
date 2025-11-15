@@ -140,6 +140,19 @@
     "analytics": {
       "title": "Analytics",
       "subtitle": "Detailed statistics for your links"
-    }
+    },
+    "search_placeholder": "Search links...",
+    "sort_by_date": "Sort by Date",
+    "sort_by_clicks": "Sort by Clicks",
+    "sort_by_name": "Sort by Name",
+    "custom_code_label": "Custom Short Code (Optional)",
+    "custom_code_help": "Leave empty for auto-generated code",
+    "custom_code_placeholder": "my-custom-link",
+    "utm_title": "UTM Parameters (Advanced)",
+    "utm_source": "Source",
+    "utm_medium": "Medium",
+    "utm_campaign": "Campaign",
+    "utm_term": "Term (Optional)",
+    "utm_content": "Content (Optional)"
   }
 }
