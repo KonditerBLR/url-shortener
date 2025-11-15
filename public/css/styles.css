@@ -42,7 +42,6 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
     color: var(--text-dark);
     line-height: 1.6;
-    overflow-x: hidden;
 }
 
 /* ===== CONTAINERS ===== */
@@ -630,7 +629,7 @@ body.dark-theme .qr-image {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
     gap: 48px;
     text-align: center;
 }
@@ -678,7 +677,7 @@ body.dark-theme .qr-image {
 
 .steps-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
     gap: 48px;
 }
 
@@ -732,7 +731,7 @@ body.dark-theme .qr-image {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: 32px;
 }
 
@@ -780,7 +779,7 @@ body.dark-theme .qr-image {
 
 .testimonials-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: 32px;
 }
 
@@ -1759,7 +1758,7 @@ body.dark-theme .cta {
 
 .utm-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
     gap: 16px;
 }
 
