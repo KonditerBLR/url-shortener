@@ -107,20 +107,20 @@
             </div>
 
             <div class="input-group">
-                <label for="createTitle">Title (optional):</label>
-                <input type="text" id="createTitle" placeholder="My awesome link">
+                <label for="createTitle" data-lang="dashboard.create_modal.title_label">Title (optional):</label>
+                <input type="text" id="createTitle" data-lang="dashboard.create_modal.title_placeholder" placeholder="My awesome link">
             </div>
 
             <div class="input-group">
-                <label for="createCustomCode">Custom code (optional):</label>
-                <input type="text" id="createCustomCode" placeholder="mylink" pattern="[a-zA-Z0-9-_]{3,50}">
-                <small>3-50 characters: letters, numbers, dash, underscore</small>
+                <label for="createCustomCode" data-lang="dashboard.create_modal.custom_code_label">Custom code (optional):</label>
+                <input type="text" id="createCustomCode" data-lang="dashboard.create_modal.custom_code_placeholder" placeholder="mylink" pattern="[a-zA-Z0-9-_]{3,50}">
+                <small data-lang="dashboard.create_modal.custom_code_hint">3-50 characters: letters, numbers, dash, underscore</small>
             </div>
 
             <div class="input-group">
-                <label for="createExpires">Expires in (days, optional):</label>
-                <input type="number" id="createExpires" placeholder="0" min="0" max="365">
-                <small>Leave 0 for no expiration</small>
+                <label for="createExpires" data-lang="dashboard.create_modal.expires_label">Expires in (days, optional):</label>
+                <input type="number" id="createExpires" data-lang="dashboard.create_modal.expires_placeholder" placeholder="0" min="0" max="365">
+                <small data-lang="dashboard.create_modal.expires_hint">Leave 0 for no expiration</small>
             </div>
 
             <div class="error" id="createError"></div>
@@ -152,28 +152,28 @@
         <div class="modal-overlay" onclick="closeEditModal()"></div>
         <div class="modal-content">
             <button class="modal-close" onclick="closeEditModal()">×</button>
-            <h2>Edit Link</h2>
+            <h2 data-lang="dashboard.edit_modal.title">Edit Link</h2>
 
             <div class="input-group">
-                <label for="editUrl">Destination URL:</label>
+                <label for="editUrl" data-lang="dashboard.edit_modal.url_label">Destination URL:</label>
                 <input type="text" id="editUrl" placeholder="https://example.com">
             </div>
 
             <div class="input-group">
-                <label for="editTitle">Title:</label>
-                <input type="text" id="editTitle" placeholder="My link">
+                <label for="editTitle" data-lang="dashboard.edit_modal.title_label">Title:</label>
+                <input type="text" id="editTitle" data-lang="dashboard.edit_modal.title_placeholder" placeholder="My link">
             </div>
 
             <div class="input-group">
-                <label for="editExpires">Expires in (days):</label>
-                <input type="number" id="editExpires" placeholder="0" min="0" max="365">
-                <small>0 = no expiration</small>
+                <label for="editExpires" data-lang="dashboard.edit_modal.expires_label">Expires in (days):</label>
+                <input type="number" id="editExpires" data-lang="dashboard.edit_modal.expires_placeholder" placeholder="0" min="0" max="365">
+                <small data-lang="dashboard.edit_modal.expires_hint">0 = no expiration</small>
             </div>
 
             <div class="error" id="editError"></div>
             <div class="success" id="editSuccess"></div>
 
-            <button class="btn-primary btn-full" onclick="saveEdit()">Save Changes</button>
+            <button class="btn-primary btn-full" onclick="saveEdit()" data-lang="dashboard.edit_modal.button">Save Changes</button>
         </div>
     </div>
 
