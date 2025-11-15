@@ -2304,6 +2304,307 @@ async function revokeApiKey(keyId, keyName) {
     }
 }
 
+// ===== WEBHOOKS MANAGEMENT =====
+
+async function showWebhooks() {
+    const content = document.getElementById('dashboardContent');
+
+    content.innerHTML = `
+        <div class="webhooks-section">
+            <div class="section-header">
+                <h2 class="section-title">Webhooks</h2>
+                <p>Receive real-time notifications when events occur</p>
+                <button class="btn-primary" onclick="showCreateWebhookModal()" style="margin-top: 20px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Create New Webhook
+                </button>
+            </div>
+
+            <div class="webhooks-list" id="webhooksList">
+                <p style="text-align: center; color: var(--text-gray); padding: 40px;">Loading...</p>
+            </div>
+
+            <div class="webhook-docs" style="margin-top: 40px; padding: 24px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 16px;">Webhook Events</h3>
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h4 style="margin-bottom: 8px;">Available Events:</h4>
+                    <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-dark);">
+                        <li><code>link.clicked</code> - Triggered when someone clicks your short link</li>
+                        <li><code>link.created</code> - Triggered when you create a new short link</li>
+                    </ul>
+                </div>
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+                    <h4 style="margin-bottom: 8px;">Payload Example:</h4>
+                    <pre style="background: #fff; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px;"><code>{
+  "event": "link.clicked",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "short_code": "abc123",
+    "original_url": "https://example.com",
+    "clicks": 42,
+    "device_type": "Mobile",
+    "os": "iOS",
+    "browser": "Safari"
+  }
+}</code></pre>
+                </div>
+                <p style="color: var(--text-gray); font-size: 14px; margin-top: 16px;">
+                    Webhooks include an <code>X-Webhook-Signature</code> header for security verification using HMAC SHA-256.
+                </p>
+            </div>
+        </div>
+    `;
+
+    await loadWebhooks();
+}
+
+async function loadWebhooks() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/webhooks', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load webhooks');
+        }
+
+        const webhooks = await response.json();
+        renderWebhooks(webhooks);
+    } catch (error) {
+        console.error('Error loading webhooks:', error);
+        document.getElementById('webhooksList').innerHTML = `
+            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
+                Failed to load webhooks
+            </p>
+        `;
+    }
+}
+
+function renderWebhooks(webhooks) {
+    const container = document.getElementById('webhooksList');
+
+    if (webhooks.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px; opacity: 0.3;">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                </svg>
+                <h3 style="color: var(--text-dark); margin-bottom: 8px;">No Webhooks Yet</h3>
+                <p style="color: var(--text-gray); margin-bottom: 24px;">Create your first webhook to receive real-time notifications</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="api-keys-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Endpoint URL</th>
+                    <th>Events</th>
+                    <th>Last Triggered</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${webhooks.map(webhook => {
+                    const lastTriggered = webhook.last_triggered_at
+                        ? new Date(webhook.last_triggered_at).toLocaleDateString()
+                        : 'Never';
+                    const statusClass = webhook.is_active ? 'active' : 'inactive';
+                    const statusText = webhook.is_active ? 'Active' : 'Inactive';
+
+                    return `
+                        <tr>
+                            <td><strong>${webhook.webhook_name}</strong></td>
+                            <td><code style="font-size: 12px;">${webhook.endpoint_url.substring(0, 50)}${webhook.endpoint_url.length > 50 ? '...' : ''}</code></td>
+                            <td>${webhook.events.join(', ')}</td>
+                            <td>${lastTriggered}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn-secondary btn-sm" onclick="toggleWebhook(${webhook.id})" style="margin-right: 8px;">
+                                    ${webhook.is_active ? 'Disable' : 'Enable'}
+                                </button>
+                                <button class="btn-danger btn-sm" onclick="deleteWebhook(${webhook.id}, '${webhook.webhook_name}')">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function showCreateWebhookModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Create New Webhook</h3>
+            <div class="form-group" style="margin: 20px 0;">
+                <label for="webhookName">Webhook Name:</label>
+                <input type="text" id="webhookName" class="form-control" placeholder="e.g., Slack Notifications" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 16px;">
+
+                <label for="webhookUrl">Endpoint URL:</label>
+                <input type="url" id="webhookUrl" class="form-control" placeholder="https://your-server.com/webhook" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 16px;">
+
+                <label>Events to Subscribe:</label>
+                <div style="margin: 10px 0;">
+                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <input type="checkbox" value="link.clicked" checked style="margin-right: 8px;">
+                        <span>link.clicked - When someone clicks your link</span>
+                    </label>
+                    <label style="display: flex; align-items: center;">
+                        <input type="checkbox" value="link.created" style="margin-right: 8px;">
+                        <span>link.created - When you create a new link</span>
+                    </label>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn-primary" onclick="createWebhook()">Create Webhook</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    document.getElementById('webhookName').focus();
+}
+
+async function createWebhook() {
+    try {
+        const name = document.getElementById('webhookName').value.trim();
+        const url = document.getElementById('webhookUrl').value.trim();
+
+        const eventCheckboxes = document.querySelectorAll('.modal-overlay input[type="checkbox"]:checked');
+        const events = Array.from(eventCheckboxes).map(cb => cb.value);
+
+        if (!name) {
+            toast.error('Please enter a webhook name');
+            return;
+        }
+
+        if (!url) {
+            toast.error('Please enter an endpoint URL');
+            return;
+        }
+
+        if (events.length === 0) {
+            toast.error('Please select at least one event');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/webhooks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, url, events })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.error || 'Failed to create webhook');
+            return;
+        }
+
+        // Close modal
+        document.querySelector('.modal-overlay')?.remove();
+
+        // Show secret key
+        const secretModal = document.createElement('div');
+        secretModal.className = 'modal-overlay';
+        secretModal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <h3 style="color: #10b981;">✓ Webhook Created Successfully!</h3>
+                <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                    <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this secret key for signature verification!</p>
+                    <div style="background: white; padding: 16px; border-radius: 4px; font-family: monospace; word-break: break-all; font-size: 14px;">
+                        ${data.secret_key}
+                    </div>
+                    <button class="btn-secondary" onclick="navigator.clipboard.writeText('${data.secret_key}'); toast.success('Secret key copied to clipboard')" style="margin-top: 12px; width: 100%;">
+                        Copy Secret Key
+                    </button>
+                </div>
+                <button class="btn-primary" onclick="this.closest('.modal-overlay').remove(); loadWebhooks()" style="width: 100%;">
+                    I've Saved the Secret Key
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(secretModal);
+        toast.success('Webhook created successfully');
+    } catch (error) {
+        console.error('Error creating webhook:', error);
+        toast.error('Failed to create webhook');
+    }
+}
+
+async function toggleWebhook(webhookId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/webhooks/${webhookId}/toggle`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.error || 'Failed to toggle webhook');
+            return;
+        }
+
+        toast.success(data.is_active ? 'Webhook enabled' : 'Webhook disabled');
+        await loadWebhooks();
+    } catch (error) {
+        console.error('Error toggling webhook:', error);
+        toast.error('Failed to toggle webhook');
+    }
+}
+
+async function deleteWebhook(webhookId, webhookName) {
+    if (!confirm(`Are you sure you want to delete the webhook "${webhookName}"? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/webhooks/${webhookId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.error || 'Failed to delete webhook');
+            return;
+        }
+
+        toast.success('Webhook deleted successfully');
+        await loadWebhooks();
+    } catch (error) {
+        console.error('Error deleting webhook:', error);
+        toast.error('Failed to delete webhook');
+    }
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -2344,6 +2645,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (page === 'api-keys') {
                 document.getElementById('pageTitle').textContent = 'API Keys';
                 showApiKeys();
+            } else if (page === 'webhooks') {
+                document.getElementById('pageTitle').textContent = 'Webhooks';
+                showWebhooks();
             }
 
             if (typeof updatePageLanguage === 'function') {
