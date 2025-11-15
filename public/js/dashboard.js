@@ -1593,11 +1593,13 @@ async function handleRemoveTagFromLink(urlId, tagId, event) {
 }
 
 // Show add tag menu for link
+let currentTagSelectUrlId = null;
+
 async function showAddTagMenu(urlId, event) {
     event.stopPropagation();
 
     if (allTags.length === 0) {
-        toast.info('No tags available. Create tags first!');
+        toast.info(t('dashboard.tags.no_available'));
         showTagsManager();
         return;
     }
@@ -1610,26 +1612,50 @@ async function showAddTagMenu(urlId, event) {
     const availableTags = allTags.filter(t => !currentTagIds.includes(t.id));
 
     if (availableTags.length === 0) {
-        toast.info('All tags are already assigned to this link');
+        toast.info(t('dashboard.tags.all_assigned'));
         return;
     }
 
-    // Create simple selection prompt (можно улучшить до dropdown)
-    const tagNames = availableTags.map((t, i) => `${i + 1}. ${t.name}`).join('\n');
-    const selection = prompt(`Select tag to add:\n\n${tagNames}\n\nEnter number (1-${availableTags.length}):`);
+    // Store current URL ID for tag selection
+    currentTagSelectUrlId = urlId;
 
-    if (selection) {
-        const index = parseInt(selection) - 1;
-        if (index >= 0 && index < availableTags.length) {
-            const selectedTag = availableTags[index];
-            const success = await addTagToLink(urlId, selectedTag.id);
-            if (success) {
-                await showLinks();
-            }
-        } else {
-            toast.error('Invalid selection');
-        }
+    // Populate tag selector modal
+    const tagSelectorList = document.getElementById('tagSelectorList');
+    tagSelectorList.innerHTML = availableTags.map(tag => `
+        <div class="tag-selector-item" onclick="selectTagForLink(${tag.id})">
+            <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
+            <div class="tag-selector-name">${tag.name}</div>
+            <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+        </div>
+    `).join('');
+
+    // Open modal
+    document.getElementById('tagSelectorModal').classList.add('show');
+
+    // Update language
+    if (typeof updatePageLanguage === 'function') {
+        updatePageLanguage();
     }
+}
+
+// Select tag and add to link
+async function selectTagForLink(tagId) {
+    if (!currentTagSelectUrlId) return;
+
+    const success = await addTagToLink(currentTagSelectUrlId, tagId);
+    if (success) {
+        closeTagSelector();
+        await showLinks();
+    }
+}
+
+// Close tag selector modal
+function closeTagSelector() {
+    document.getElementById('tagSelectorModal').classList.remove('show');
+    currentTagSelectUrlId = null;
 }
 
 // Отображение профиля

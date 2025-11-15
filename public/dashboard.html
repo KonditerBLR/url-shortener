@@ -331,6 +331,20 @@
         </div>
     </div>
 
+    <!-- Tag Selector Modal -->
+    <div class="modal" id="tagSelectorModal">
+        <div class="modal-overlay" onclick="closeTagSelector()"></div>
+        <div class="modal-content modal-medium">
+            <button class="modal-close" onclick="closeTagSelector()">×</button>
+            <h2 data-lang="dashboard.tags.select_tag">Select Tag</h2>
+            <p class="modal-subtitle" data-lang="dashboard.tags.select_tag_hint">Choose a tag to add to this link</p>
+
+            <div class="tag-selector-list" id="tagSelectorList">
+                <!-- Tags will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
