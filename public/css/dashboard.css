@@ -991,6 +991,12 @@ body.dark-theme .btn-reset-qr:hover {
 
     .modal-medium {
         max-width: 95%;
+        margin: 16px;
+    }
+
+    .modal-large {
+        max-width: 95%;
+        margin: 16px;
     }
 }
 
@@ -1013,19 +1019,24 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .dashboard-header {
-        padding: 16px;
-        flex-direction: column;
-        gap: 16px;
+        padding: 16px 20px;
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .header-left h1 {
+        font-size: 24px;
     }
 
     .header-left,
     .header-right {
-        width: 100%;
+        width: auto;
     }
 
     .header-right {
-        flex-direction: row-reverse;
-        justify-content: space-between;
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 12px;
     }
 
     .user-info {
@@ -1033,7 +1044,7 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .dashboard-content {
-        padding: 16px;
+        padding: 20px 16px;
     }
 
     /* Stats cards - 2 columns on tablet */
@@ -1043,6 +1054,23 @@ body.dark-theme .btn-reset-qr:hover {
         margin-bottom: 24px;
     }
 
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-card-value {
+        font-size: 28px;
+    }
+
+    /* Section headers */
+    .section-header {
+        padding: 20px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
     /* Tables - make scrollable */
     .links-table-wrapper {
         overflow-x: auto;
@@ -1050,38 +1078,86 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .links-table {
-        font-size: 12px;
-        min-width: 600px;
+        font-size: 13px;
+        min-width: 700px;
     }
 
     .links-table th,
     .links-table td {
-        padding: 12px 8px;
+        padding: 14px 12px;
+    }
+
+    .link-original {
+        max-width: 250px;
     }
 
     /* Search and sort controls - stack vertically */
     .links-controls {
         flex-direction: column;
         gap: 12px;
+        padding: 0 20px;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        min-width: 100%;
     }
 
     .sort-controls {
         width: 100%;
+        justify-content: space-between;
     }
 
     /* Charts - adjust size */
     .analytics-charts-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .chart-card {
+        padding: 20px;
     }
 
     /* Modal adjustments */
     .modal-content {
-        max-width: 95%;
-        padding: 24px;
+        max-width: 92%;
+        padding: 28px 24px;
+        margin: 20px;
     }
 
     .utm-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Header actions */
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        padding: 9px 14px;
+        font-size: 13px;
+    }
+
+    /* Tag filters */
+    .tag-filters {
+        flex-wrap: wrap;
+    }
+
+    .tag-filter {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+
+    /* Profile section */
+    .profile-section {
+        max-width: 100%;
+    }
+
+    .profile-card {
+        padding: 24px;
     }
 }
 
@@ -1092,11 +1168,12 @@ body.dark-theme .btn-reset-qr:hover {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         width: 260px;
+        z-index: 200;
     }
 
     .sidebar.mobile-open {
         transform: translateX(0);
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
     }
 
     .sidebar-header .logo-text,
@@ -1114,8 +1191,8 @@ body.dark-theme .btn-reset-qr:hover {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         background: var(--bg-white);
         border: 2px solid var(--border);
         border-radius: 8px;
@@ -1136,7 +1213,8 @@ body.dark-theme .btn-reset-qr:hover {
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 99;
+        backdrop-filter: blur(2px);
+        z-index: 199;
         display: none;
     }
 
@@ -1145,37 +1223,71 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .dashboard-header {
-        padding: 12px;
+        padding: 14px 16px;
+    }
+
+    .header-left h1 {
+        font-size: 20px;
     }
 
     .dashboard-content {
-        padding: 12px;
+        padding: 16px 14px;
     }
 
     /* Stats cards - 1 column on mobile */
     .stats-cards {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 14px;
         margin-bottom: 20px;
     }
 
     .stat-card {
-        padding: 16px;
+        padding: 18px 16px;
     }
 
     .stat-card-value {
-        font-size: 28px;
+        font-size: 26px;
+    }
+
+    .stat-card-title {
+        font-size: 13px;
+    }
+
+    .stat-card-change {
+        font-size: 13px;
     }
 
     /* Section headers */
     .section-header {
         flex-direction: column;
         gap: 12px;
-        align-items: flex-start;
+        align-items: stretch;
+        padding: 16px;
+    }
+
+    .section-title {
+        font-size: 17px;
     }
 
     .section-header .btn-create {
         width: 100%;
+        justify-content: center;
+    }
+
+    /* Links controls */
+    .links-controls {
+        padding: 0 16px;
+        margin-bottom: 16px;
+    }
+
+    .search-box input {
+        font-size: 15px;
+        padding: 11px 14px 11px 44px;
+    }
+
+    .sort-controls select {
+        font-size: 14px;
+        padding: 11px 14px;
     }
 
     /* Links table - card layout on mobile */
@@ -1187,6 +1299,7 @@ body.dark-theme .btn-reset-qr:hover {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        padding: 0 16px 16px;
     }
 
     .link-mobile-card {
@@ -1205,11 +1318,12 @@ body.dark-theme .btn-reset-qr:hover {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .link-mobile-card-title {
         font-weight: 600;
+        font-size: 15px;
         color: var(--primary);
         word-break: break-all;
     }
@@ -1219,11 +1333,12 @@ body.dark-theme .btn-reset-qr:hover {
         color: var(--text-gray);
         margin-bottom: 12px;
         word-break: break-all;
+        line-height: 1.4;
     }
 
     .link-mobile-card-stats {
         display: flex;
-        gap: 16px;
+        gap: 20px;
         padding: 12px 0;
         border-top: 1px solid var(--border);
         border-bottom: 1px solid var(--border);
@@ -1244,38 +1359,55 @@ body.dark-theme .btn-reset-qr:hover {
         font-size: 11px;
         color: var(--text-gray);
         text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
 
     .link-mobile-card-stat-value {
         font-weight: 600;
+        font-size: 15px;
         color: var(--text-dark);
     }
 
     .link-mobile-card-actions {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 7px 10px;
+        font-size: 13px;
     }
 
     /* Modal - full screen on mobile */
     .modal-content {
         max-width: 100%;
-        max-height: 100%;
+        max-height: 100vh;
         width: 100%;
         height: 100%;
         border-radius: 0;
-        padding: 20px;
+        padding: 24px 18px;
         overflow-y: auto;
     }
 
     .modal-close {
-        top: 16px;
-        right: 16px;
+        top: 18px;
+        right: 18px;
+        font-size: 28px;
     }
 
     /* Charts - smaller height */
+    .chart-card {
+        padding: 18px;
+    }
+
     .chart-card canvas {
-        max-height: 200px !important;
+        max-height: 220px !important;
+    }
+
+    .chart-full canvas {
+        max-height: 250px !important;
     }
 
     /* Analytics layout */
@@ -1288,6 +1420,10 @@ body.dark-theme .btn-reset-qr:hover {
         width: 100%;
     }
 
+    .analytics-charts-grid {
+        gap: 16px;
+    }
+
     /* Hide desktop-only elements */
     .user-avatar {
         display: none;
@@ -1295,52 +1431,243 @@ body.dark-theme .btn-reset-qr:hover {
 
     /* Adjust font sizes */
     h1, #pageTitle {
-        font-size: 24px;
+        font-size: 20px;
     }
 
     h2, .section-title {
-        font-size: 18px;
+        font-size: 17px;
     }
 
     /* Time filter - stack vertically */
     .time-filter {
         width: 100%;
         flex-wrap: wrap;
+        gap: 6px;
+        padding: 3px;
     }
 
     .time-filter-btn {
-        flex: 1 1 45%;
+        flex: 1 1 calc(33.333% - 4px);
         font-size: 12px;
-        padding: 6px 12px;
+        padding: 7px 10px;
+    }
+
+    /* Header actions */
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-secondary {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    /* Tag filters */
+    .tag-filters {
+        padding: 3px;
+        gap: 6px;
+    }
+
+    .tag-filter {
+        flex: 1 1 auto;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    /* Profile section */
+    .profile-card {
+        padding: 20px 16px;
+    }
+
+    .form-group input {
+        font-size: 15px;
+        padding: 11px 14px;
+    }
+
+    /* API Keys & Webhooks tables */
+    .api-keys-table,
+    .webhooks-table {
+        font-size: 13px;
+    }
+
+    .api-keys-table th,
+    .api-keys-table td {
+        padding: 12px 10px;
+    }
+
+    /* Tag manager */
+    .tag-manager-header {
+        padding: 0 16px;
+    }
+
+    .tags-list {
+        padding: 0 16px;
+    }
+
+    .tag-item {
+        padding: 12px 14px;
+    }
+
+    /* Bulk actions bar */
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    .bulk-actions-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-bulk-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 60px 16px;
+    }
+
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+    }
+
+    .empty-state h3 {
+        font-size: 18px;
+    }
+
+    .empty-state p {
+        font-size: 14px;
     }
 }
 
 /* Very small mobile (360px and below) */
 @media (max-width: 360px) {
+    .dashboard-header {
+        padding: 12px 14px;
+    }
+
+    .header-left h1 {
+        font-size: 18px;
+    }
+
+    .dashboard-content {
+        padding: 14px 12px;
+    }
+
     .stats-cards {
-        gap: 8px;
+        gap: 12px;
     }
 
     .stat-card {
-        padding: 12px;
+        padding: 16px 14px;
     }
 
     .stat-card-value {
         font-size: 24px;
     }
 
-    .dashboard-content {
-        padding: 8px;
+    .stat-card-title {
+        font-size: 12px;
     }
 
-    .btn-icon {
-        width: 32px;
-        height: 32px;
+    .section-header {
+        padding: 14px;
     }
 
-    .btn-icon svg {
-        width: 16px;
-        height: 16px;
+    .section-title {
+        font-size: 16px;
+    }
+
+    .btn-create {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+
+    .search-box input {
+        font-size: 14px;
+        padding: 10px 12px 10px 42px;
+    }
+
+    .sort-controls select {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+
+    .links-mobile-cards {
+        padding: 0 14px 14px;
+        gap: 10px;
+    }
+
+    .link-mobile-card {
+        padding: 14px;
+    }
+
+    .link-mobile-card-title {
+        font-size: 14px;
+    }
+
+    .link-mobile-card-stat-value {
+        font-size: 14px;
+    }
+
+    .btn-action {
+        padding: 6px 9px;
+        font-size: 12px;
+    }
+
+    .modal-content {
+        padding: 20px 16px;
+    }
+
+    .modal-content h2 {
+        font-size: 18px;
+    }
+
+    .input-group label {
+        font-size: 12px;
+    }
+
+    .input-group input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .time-filter-btn {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    .tag-filter {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+
+    .profile-card {
+        padding: 18px 14px;
+    }
+
+    .empty-state {
+        padding: 50px 14px;
+    }
+
+    .empty-state svg {
+        width: 56px;
+        height: 56px;
+    }
+
+    .empty-state h3 {
+        font-size: 16px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
     }
 }
 /* ===== DARK THEME FOR DASHBOARD ===== */
