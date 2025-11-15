@@ -574,6 +574,43 @@ body.dark-theme .expiration-badge.expires-soon {
     background: rgba(245, 158, 11, 0.15);
 }
 
+/* ===== PASSWORD PROTECTION BUTTON ===== */
+
+.btn-action.btn-password {
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+}
+
+.btn-action.btn-password:hover,
+.btn-action.btn-password.active {
+    background: #f3e8ff;
+    color: #8b5cf6;
+    transform: scale(1.1);
+}
+
+/* Dark theme for password button */
+body.dark-theme .btn-action.btn-password:hover,
+body.dark-theme .btn-action.btn-password.active {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+/* ===== PASSWORD PROTECTION BADGE ===== */
+
+.password-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+body.dark-theme .password-badge {
+    background: rgba(139, 92, 246, 0.15);
+}
+
 .empty-state {
     padding: 80px 24px;
     text-align: center;

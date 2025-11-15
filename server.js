@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
 const routes = require('./routes');
 const { router: authRoutes, authenticateToken } = require('./auth');
 const { pool } = require('./db');
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static('public'));
 
 // Главная страница

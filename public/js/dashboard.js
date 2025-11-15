@@ -384,6 +384,126 @@ function toggleArchivedFilter() {
     filterLinks();
 }
 
+// ===== PASSWORD PROTECTION =====
+
+// Set or update link password
+async function setLinkPassword(urlId) {
+    const link = allLinksData.find(l => l.id === urlId);
+    if (!link) return;
+
+    // Create modal for password settings
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>${link.has_password ? '🔒 Update Password' : '🔓 Set Password Protection'}</h3>
+            <div class="form-group" style="margin: 20px 0;">
+                <label for="linkPassword">Password:</label>
+                <input type="password" id="linkPassword" class="form-control" placeholder="Enter password (min 4 characters)" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 10px;">
+                <input type="password" id="linkPasswordConfirm" class="form-control" placeholder="Confirm password" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove password protection</small>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn-primary" onclick="saveLinkPassword(${urlId})">Save</button>
+                ${link.has_password ? `<button class="btn-danger" onclick="removeLinkPassword(${urlId})">Remove Password</button>` : ''}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// Save link password
+async function saveLinkPassword(urlId) {
+    try {
+        const password = document.getElementById('linkPassword').value;
+        const passwordConfirm = document.getElementById('linkPasswordConfirm').value;
+
+        if (!password && !passwordConfirm) {
+            // Empty = remove password
+            await removeLinkPassword(urlId);
+            return;
+        }
+
+        if (password !== passwordConfirm) {
+            toast.error('Passwords do not match');
+            return;
+        }
+
+        if (password.length < 4) {
+            toast.error('Password must be at least 4 characters');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/password`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.has_password = data.has_password;
+            }
+
+            filterLinks();
+            toast.success('Password protection set successfully');
+            document.querySelector('.modal-overlay')?.remove();
+        } else {
+            toast.error(data.error || 'Failed to set password');
+        }
+    } catch (error) {
+        console.error('Error setting password:', error);
+        toast.error('Failed to set password');
+    }
+}
+
+// Remove link password
+async function removeLinkPassword(urlId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/password`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ password: null })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.has_password = false;
+            }
+
+            filterLinks();
+            toast.success('Password protection removed');
+            document.querySelector('.modal-overlay')?.remove();
+        } else {
+            toast.error(data.error || 'Failed to remove password');
+        }
+    } catch (error) {
+        console.error('Error removing password:', error);
+        toast.error('Failed to remove password');
+    }
+}
+
 // ===== LINK EXPIRATION =====
 
 // Set or update link expiration
@@ -1388,6 +1508,15 @@ function renderLinksTable(links, containerId) {
                                     </div>
                                 ` : '';
                             })()}
+                            ${link.has_password ? `
+                                <div class="password-badge" style="margin-top: 8px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" style="margin-right: 4px;">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                    <span style="color: #8b5cf6; font-size: 12px; font-weight: 500;">Password Protected</span>
+                                </div>
+                            ` : ''}
                         </td>
                         <td>${link.clicks}</td>
                         <td>${new Date(link.created_at).toLocaleDateString()}</td>
@@ -1420,6 +1549,12 @@ function renderLinksTable(links, containerId) {
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"/>
                                         <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-action btn-password ${link.has_password ? 'active' : ''}" onclick="setLinkPassword(${link.id})" title="${link.has_password ? 'Update password protection' : 'Set password protection'}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="${link.has_password ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                     </svg>
                                 </button>
                                 <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">

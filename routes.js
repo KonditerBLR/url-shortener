@@ -5,6 +5,7 @@ const { generateShortCode } = require('./utils');
 const { authenticateToken } = require('./auth');
 const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // Optional auth middleware
 const optionalAuth = (req, res, next) => {
@@ -125,7 +126,7 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Get all user URLs with their tags, starred status, description, archived and expiration
+    // Get all user URLs with their tags, starred status, description, archived, expiration, and password protection
     const result = await db.query(
       `SELECT
         u.id, u.original_url, u.short_code, u.clicks, u.created_at,
@@ -134,6 +135,7 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
         u.archived_at,
         u.description,
         u.expires_at,
+        (u.password_hash IS NOT NULL) as has_password,
         COALESCE(
           json_agg(
             json_build_object('id', t.id, 'name', t.name, 'color', t.color)
@@ -374,6 +376,167 @@ router.get('/:shortCode', async (req, res) => {
             <h1>⏰ Link Expired</h1>
             <p>This short link has expired and is no longer available.</p>
             <p>Expired on: ${expiresAt.toLocaleDateString()}</p>
+          </body>
+          </html>
+        `);
+      }
+    }
+
+    // Check if link is password protected
+    if (url.password_hash) {
+      // Check for verification cookie
+      const verificationToken = req.cookies?.[`pwd_${shortCode}`];
+      let isVerified = false;
+
+      if (verificationToken) {
+        try {
+          const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
+          isVerified = decoded.shortCode === shortCode;
+        } catch (err) {
+          // Invalid token, will show password prompt
+        }
+      }
+
+      if (!isVerified) {
+        // Show password prompt page
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Password Protected Link</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .container {
+                background: white;
+                border-radius: 16px;
+                padding: 40px;
+                max-width: 400px;
+                width: 100%;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+              }
+              h1 {
+                color: #333;
+                margin-bottom: 10px;
+                font-size: 24px;
+              }
+              p {
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 14px;
+              }
+              .form-group {
+                margin-bottom: 20px;
+              }
+              label {
+                display: block;
+                color: #333;
+                margin-bottom: 8px;
+                font-weight: 500;
+                font-size: 14px;
+              }
+              input[type="password"] {
+                width: 100%;
+                padding: 12px 16px;
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+              }
+              input[type="password"]:focus {
+                outline: none;
+                border-color: #667eea;
+              }
+              button {
+                width: 100%;
+                padding: 12px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.2s;
+              }
+              button:hover {
+                transform: translateY(-2px);
+              }
+              button:active {
+                transform: translateY(0);
+              }
+              .error {
+                background: #fee;
+                border: 1px solid #fcc;
+                color: #c33;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                font-size: 14px;
+                display: none;
+              }
+              .lock-icon {
+                width: 60px;
+                height: 60px;
+                margin: 0 auto 20px;
+                color: #667eea;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <svg class="lock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/>
+              </svg>
+              <h1>🔒 Password Required</h1>
+              <p>This link is password protected. Please enter the password to continue.</p>
+              <div id="errorMsg" class="error"></div>
+              <form id="passwordForm">
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  <input type="password" id="password" name="password" required autofocus>
+                </div>
+                <button type="submit">Unlock Link</button>
+              </form>
+            </div>
+            <script>
+              document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const password = document.getElementById('password').value;
+                const errorMsg = document.getElementById('errorMsg');
+
+                try {
+                  const response = await fetch('/api/verify-password/${shortCode}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                  });
+
+                  const data = await response.json();
+
+                  if (response.ok) {
+                    // Redirect to the short link again, cookie will be set
+                    window.location.href = '/${shortCode}';
+                  } else {
+                    errorMsg.textContent = data.error || 'Incorrect password';
+                    errorMsg.style.display = 'block';
+                  }
+                } catch (error) {
+                  errorMsg.textContent = 'An error occurred. Please try again.';
+                  errorMsg.style.display = 'block';
+                }
+              });
+            </script>
           </body>
           </html>
         `);
@@ -671,6 +834,105 @@ router.post('/urls/:id/archived', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error toggling archived:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ===== PASSWORD PROTECTION =====
+
+// Verify password for protected link
+router.post('/verify-password/:shortCode', async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    // Get link with password hash
+    const result = await db.query(
+      'SELECT id, password_hash FROM urls WHERE short_code = $1',
+      [shortCode]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    const url = result.rows[0];
+
+    if (!url.password_hash) {
+      return res.status(400).json({ error: 'Link is not password protected' });
+    }
+
+    // Verify password
+    const isValid = await bcrypt.compare(password, url.password_hash);
+
+    if (!isValid) {
+      return res.status(401).json({ error: 'Incorrect password' });
+    }
+
+    // Create verification token (valid for 24 hours)
+    const token = jwt.sign(
+      { shortCode },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Set cookie
+    res.cookie(`pwd_${shortCode}`, token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax'
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error verifying password:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Set or update link password
+router.put('/urls/:id/password', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    const userId = req.user.userId;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT id FROM urls WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    let passwordHash = null;
+
+    // If password provided, hash it
+    if (password && password.trim() !== '') {
+      // Validate password length
+      if (password.length < 4) {
+        return res.status(400).json({ error: 'Password must be at least 4 characters' });
+      }
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    // Update password
+    const result = await db.query(
+      'UPDATE urls SET password_hash = $1 WHERE id = $2 RETURNING (password_hash IS NOT NULL) as has_password',
+      [passwordHash, id]
+    );
+
+    res.json({
+      has_password: result.rows[0].has_password
+    });
+  } catch (error) {
+    console.error('Error updating password:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
