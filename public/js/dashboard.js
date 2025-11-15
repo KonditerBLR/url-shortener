@@ -570,6 +570,110 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// ===== DESCRIPTION FUNCTIONS =====
+
+// Show edit description inline
+function showEditDescription(linkId) {
+    const descContainer = document.getElementById(`desc-${linkId}`);
+    const currentDesc = descContainer.getAttribute('data-description') || '';
+
+    descContainer.innerHTML = `
+        <div class="description-edit">
+            <textarea id="desc-input-${linkId}"
+                      class="description-input"
+                      placeholder="Add a description..."
+                      maxlength="500">${currentDesc}</textarea>
+            <div class="description-actions">
+                <button class="btn-desc-save" onclick="saveDescription(${linkId})">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Save
+                </button>
+                <button class="btn-desc-cancel" onclick="cancelEditDescription(${linkId})">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Focus and select text
+    const textarea = document.getElementById(`desc-input-${linkId}`);
+    textarea.focus();
+    textarea.select();
+}
+
+// Save description
+async function saveDescription(linkId) {
+    const textarea = document.getElementById(`desc-input-${linkId}`);
+    const description = textarea.value.trim();
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${linkId}/description`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ description })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            // Update local data
+            const link = allLinksData.find(l => l.id === linkId);
+            if (link) {
+                link.description = data.description;
+            }
+
+            // Update display
+            renderDescription(linkId, data.description);
+            toast.success('Description updated');
+        } else {
+            toast.error('Failed to update description');
+        }
+    } catch (error) {
+        console.error('Error updating description:', error);
+        toast.error('Failed to update description');
+    }
+}
+
+// Cancel edit description
+function cancelEditDescription(linkId) {
+    const descContainer = document.getElementById(`desc-${linkId}`);
+    const currentDesc = descContainer.getAttribute('data-description');
+    renderDescription(linkId, currentDesc);
+}
+
+// Render description display
+function renderDescription(linkId, description) {
+    const descContainer = document.getElementById(`desc-${linkId}`);
+    descContainer.setAttribute('data-description', description || '');
+
+    if (description) {
+        descContainer.innerHTML = `
+            <div class="description-display" onclick="showEditDescription(${linkId})">
+                <span class="description-text">${description}</span>
+                <svg class="description-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </div>
+        `;
+    } else {
+        descContainer.innerHTML = `
+            <div class="description-display description-empty" onclick="showEditDescription(${linkId})">
+                <span class="description-text">Add description...</span>
+                <svg class="description-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </div>
+        `;
+    }
+}
+
 // Load all tags
 async function loadTags() {
     try {
@@ -1064,6 +1168,24 @@ function renderLinksTable(links, containerId) {
                                     </button>
                                 </div>
                             `}
+                            <div class="link-description" id="desc-${link.id}" data-description="${link.description || ''}">
+                                ${link.description ? `
+                                    <div class="description-display" onclick="showEditDescription(${link.id})">
+                                        <span class="description-text">${link.description}</span>
+                                        <svg class="description-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </div>
+                                ` : `
+                                    <div class="description-display description-empty" onclick="showEditDescription(${link.id})">
+                                        <span class="description-text">Add description...</span>
+                                        <svg class="description-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 5v14M5 12h14"/>
+                                        </svg>
+                                    </div>
+                                `}
+                            </div>
                         </td>
                         <td>${link.clicks}</td>
                         <td>${new Date(link.created_at).toLocaleDateString()}</td>
