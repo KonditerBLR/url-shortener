@@ -381,6 +381,271 @@ function showProfile() {
     }
 }
 
+// Отображение аналитики
+async function showAnalytics() {
+    const content = document.getElementById('dashboardContent');
+
+    content.innerHTML = `
+        <div class="analytics-section">
+            <div class="charts-grid">
+                <!-- Clicks Timeline Chart -->
+                <div class="chart-card">
+                    <h3>Clicks Over Time</h3>
+                    <canvas id="clicksChart"></canvas>
+                </div>
+
+                <!-- Devices Chart -->
+                <div class="chart-card">
+                    <h3>Devices</h3>
+                    <canvas id="devicesChart"></canvas>
+                </div>
+
+                <!-- Browsers Chart -->
+                <div class="chart-card">
+                    <h3>Browsers</h3>
+                    <canvas id="browsersChart"></canvas>
+                </div>
+
+                <!-- OS Chart -->
+                <div class="chart-card">
+                    <h3>Operating Systems</h3>
+                    <canvas id="osChart"></canvas>
+                </div>
+
+                <!-- Referrers Table -->
+                <div class="chart-card">
+                    <h3>Top Referrers</h3>
+                    <div id="referrersTable"></div>
+                </div>
+
+                <!-- Geography Table -->
+                <div class="chart-card">
+                    <h3>Top Countries</h3>
+                    <div id="geoTable"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    await loadAnalyticsData();
+}
+
+// Загрузка данных аналитики
+async function loadAnalyticsData() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        // Загружаем все данные параллельно
+        const [timeline, devices, platforms, referrers, geo] = await Promise.all([
+            fetch('/api/stats/analytics/clicks-timeline?days=30', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/devices', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/platforms', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/referrers', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/geo', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json())
+        ]);
+
+        // Рендерим графики
+        renderClicksChart(timeline.timeline || []);
+        renderDevicesChart(devices.devices || []);
+        renderBrowsersChart(platforms.browsers || []);
+        renderOSChart(platforms.os || []);
+        renderReferrersTable(referrers.referrers || []);
+        renderGeoTable(geo.countries || []);
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+    }
+}
+
+// График кликов по времени
+function renderClicksChart(data) {
+    const ctx = document.getElementById('clicksChart');
+    if (!ctx) return;
+
+    const chartData = {
+        labels: data.map(d => new Date(d.date).toLocaleDateString()),
+        datasets: [{
+            label: 'Clicks',
+            data: data.map(d => parseInt(d.clicks)),
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// График устройств
+function renderDevicesChart(data) {
+    const ctx = document.getElementById('devicesChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => d.device_type || 'Unknown'),
+            datasets: [{
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// График браузеров
+function renderBrowsersChart(data) {
+    const ctx = document.getElementById('browsersChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.browser || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// График ОС
+function renderOSChart(data) {
+    const ctx = document.getElementById('osChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.os || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#764ba2'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Таблица реферальных источников
+function renderReferrersTable(data) {
+    const container = document.getElementById('referrersTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Clicks</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.source}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Таблица географии
+function renderGeoTable(data) {
+    const container = document.getElementById('geoTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Country</th>
+                    <th>Clicks</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.country}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -409,6 +674,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (page === 'overview') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.overview');
                 showOverview();
+            } else if (page === 'analytics') {
+                document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.analytics');
+                showAnalytics();
             } else if (page === 'links') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.links');
                 showLinks();
