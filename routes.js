@@ -125,10 +125,11 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Get all user URLs with their tags
+    // Get all user URLs with their tags and starred status
     const result = await db.query(
       `SELECT
         u.id, u.original_url, u.short_code, u.clicks, u.created_at,
+        COALESCE(u.is_starred, FALSE) as is_starred,
         COALESCE(
           json_agg(
             json_build_object('id', t.id, 'name', t.name, 'color', t.color)
@@ -525,6 +526,38 @@ router.delete('/urls/:urlId/tags/:tagId', authenticateToken, async (req, res) =>
     res.json({ success: true });
   } catch (error) {
     console.error('Error removing tag from link:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ===== STARRED LINKS =====
+
+// Toggle starred status
+router.post('/urls/:id/starred', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT is_starred FROM urls WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    // Toggle starred
+    const currentStarred = urlCheck.rows[0].is_starred;
+    const result = await db.query(
+      'UPDATE urls SET is_starred = $1 WHERE id = $2 RETURNING is_starred',
+      [!currentStarred, id]
+    );
+
+    res.json({ is_starred: result.rows[0].is_starred });
+  } catch (error) {
+    console.error('Error toggling starred:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
