@@ -306,13 +306,28 @@ router.delete('/urls/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// QR Code endpoint
+// QR Code endpoint with customization support
 router.get('/qr/:shortCode', async (req, res) => {
   try {
     const { shortCode } = req.params;
+    const { color, bgColor } = req.query;
+
     const shortUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/${shortCode}`;
-    const qrCode = await QRCode.toDataURL(shortUrl);
-    
+
+    // QR Code options with customization
+    const options = {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      quality: 0.92,
+      margin: 1,
+      color: {
+        dark: color || '#000000',    // foreground color
+        light: bgColor || '#FFFFFF'  // background color
+      }
+    };
+
+    const qrCode = await QRCode.toDataURL(shortUrl, options);
+
     res.send(`<img src="${qrCode}" alt="QR Code" />`);
   } catch (error) {
     console.error(error);

@@ -1933,9 +1933,85 @@ function copyLink(shortCode, event) {
     }, 2000);
 }
 
+// ===== QR CODE CUSTOMIZATION =====
+
+let currentQRShortCode = null;
+
 function showQR(shortCode) {
-    const qrUrl = `/api/qr/${shortCode}`;
-    window.open(qrUrl, '_blank');
+    currentQRShortCode = shortCode;
+
+    // Reset colors to default
+    document.getElementById('qrForegroundColor').value = '#000000';
+    document.getElementById('qrBackgroundColor').value = '#FFFFFF';
+    document.getElementById('qrForegroundHex').value = '#000000';
+    document.getElementById('qrBackgroundHex').value = '#FFFFFF';
+
+    // Update preview
+    updateQRPreview();
+
+    // Show modal
+    document.getElementById('qrModal').classList.add('show');
+}
+
+function closeQRModal() {
+    document.getElementById('qrModal').classList.remove('show');
+    currentQRShortCode = null;
+}
+
+function updateQRPreview() {
+    if (!currentQRShortCode) return;
+
+    const foregroundColor = document.getElementById('qrForegroundColor').value;
+    const backgroundColor = document.getElementById('qrBackgroundColor').value;
+
+    // Update hex inputs to match color pickers
+    document.getElementById('qrForegroundHex').value = foregroundColor.toUpperCase();
+    document.getElementById('qrBackgroundHex').value = backgroundColor.toUpperCase();
+
+    // Build QR URL with colors
+    const qrUrl = `/api/qr/${currentQRShortCode}?color=${encodeURIComponent(foregroundColor)}&bgColor=${encodeURIComponent(backgroundColor)}`;
+
+    // Update image
+    const qrImage = document.getElementById('qrImage');
+    qrImage.src = qrUrl;
+}
+
+function updateQRFromHex(type) {
+    const hexInput = document.getElementById(type === 'foreground' ? 'qrForegroundHex' : 'qrBackgroundHex');
+    const colorPicker = document.getElementById(type === 'foreground' ? 'qrForegroundColor' : 'qrBackgroundColor');
+
+    let hex = hexInput.value.trim();
+
+    // Add # if missing
+    if (!hex.startsWith('#')) {
+        hex = '#' + hex;
+    }
+
+    // Validate hex color
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+        colorPicker.value = hex;
+        updateQRPreview();
+    }
+}
+
+function resetQRColors() {
+    document.getElementById('qrForegroundColor').value = '#000000';
+    document.getElementById('qrBackgroundColor').value = '#FFFFFF';
+    document.getElementById('qrForegroundHex').value = '#000000';
+    document.getElementById('qrBackgroundHex').value = '#FFFFFF';
+    updateQRPreview();
+    toast.success('Colors reset to default');
+}
+
+function downloadQR() {
+    if (!currentQRShortCode) return;
+
+    const qrImage = document.getElementById('qrImage');
+    const link = document.createElement('a');
+    link.href = qrImage.src;
+    link.download = `qr-${currentQRShortCode}.png`;
+    link.click();
+    toast.success('QR Code downloaded');
 }
 
 async function deleteLink(id) {

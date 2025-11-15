@@ -248,6 +248,73 @@
         </div>
     </div>
 
+    <!-- QR Code Customization Modal -->
+    <div class="modal" id="qrModal">
+        <div class="modal-overlay" onclick="closeQRModal()"></div>
+        <div class="modal-content modal-medium">
+            <button class="modal-close" onclick="closeQRModal()">×</button>
+            <h2>QR Code Customization</h2>
+
+            <div class="qr-customization">
+                <div class="qr-preview-section">
+                    <div class="qr-preview" id="qrPreview">
+                        <img id="qrImage" src="" alt="QR Code">
+                    </div>
+                    <button class="btn-download-qr" onclick="downloadQR()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download QR Code
+                    </button>
+                </div>
+
+                <div class="qr-controls">
+                    <div class="qr-control-group">
+                        <label for="qrForegroundColor">Foreground Color</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color"
+                                   id="qrForegroundColor"
+                                   class="color-picker"
+                                   value="#000000"
+                                   onchange="updateQRPreview()">
+                            <input type="text"
+                                   id="qrForegroundHex"
+                                   class="color-hex-input"
+                                   value="#000000"
+                                   maxlength="7"
+                                   pattern="^#[0-9A-Fa-f]{6}$"
+                                   oninput="updateQRFromHex('foreground')">
+                        </div>
+                    </div>
+
+                    <div class="qr-control-group">
+                        <label for="qrBackgroundColor">Background Color</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color"
+                                   id="qrBackgroundColor"
+                                   class="color-picker"
+                                   value="#FFFFFF"
+                                   onchange="updateQRPreview()">
+                            <input type="text"
+                                   id="qrBackgroundHex"
+                                   class="color-hex-input"
+                                   value="#FFFFFF"
+                                   maxlength="7"
+                                   pattern="^#[0-9A-Fa-f]{6}$"
+                                   oninput="updateQRFromHex('background')">
+                        </div>
+                    </div>
+
+                    <button class="btn-reset-qr" onclick="resetQRColors()">
+                        Reset to Default
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
