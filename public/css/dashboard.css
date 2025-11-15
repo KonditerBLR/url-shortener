@@ -543,3 +543,84 @@ body.dark-theme .form-group input:disabled {
     background: rgba(26, 32, 44, 0.5);
     color: var(--text-gray);
 }
+
+/* ===== ANALYTICS CHARTS ===== */
+.chart-card {
+    background: var(--bg-white);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.chart-card h4 {
+    margin-bottom: 20px;
+    color: var(--text-dark);
+    font-size: 16px;
+}
+
+.chart-full {
+    grid-column: 1 / -1;
+    max-height: 400px;
+}
+
+.chart-full canvas {
+    max-height: 300px !important;
+}
+
+.analytics-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.analytics-charts-grid canvas {
+    max-height: 280px !important;
+}
+
+/* Stat cards with icons */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-gray);
+}
+
+.stat-info .stat-value {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* Dark theme for charts */
+body.dark-theme .chart-card {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+body.dark-theme .stat-icon {
+    opacity: 0.9;
+}

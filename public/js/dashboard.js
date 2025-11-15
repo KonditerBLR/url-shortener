@@ -459,10 +459,17 @@ async function showAnalytics() {
     }
 }
 
+// Global chart instances for cleanup
+let analyticsCharts = {};
+
 // View detailed analytics for a specific link
 async function viewLinkAnalytics(linkId, shortCode) {
     const detailsDiv = document.getElementById('analyticsDetails');
     const dataDiv = document.getElementById('analyticsData');
+
+    // Destroy existing charts
+    Object.values(analyticsCharts).forEach(chart => chart?.destroy());
+    analyticsCharts = {};
 
     detailsDiv.style.display = 'block';
     document.getElementById('analyticsLinkTitle').textContent = `Statistics for: ${shortCode}`;
@@ -478,68 +485,177 @@ async function viewLinkAnalytics(linkId, shortCode) {
         dataDiv.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h4>Total Clicks</h4>
-                    <p class="stat-value">${stats.total.total_clicks || 0}</p>
+                    <div class="stat-icon" style="background: #dbeafe; color: #3b82f6;">📊</div>
+                    <div class="stat-info">
+                        <h4>Total Clicks</h4>
+                        <p class="stat-value">${stats.total.total_clicks || 0}</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <h4>Unique Clicks</h4>
-                    <p class="stat-value">${stats.total.unique_clicks || 0}</p>
+                    <div class="stat-icon" style="background: #d1fae5; color: #10b981;">👥</div>
+                    <div class="stat-info">
+                        <h4>Unique Visitors</h4>
+                        <p class="stat-value">${stats.total.unique_clicks || 0}</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <h4>Clicks Today</h4>
-                    <p class="stat-value">${stats.total.clicks_today || 0}</p>
+                    <div class="stat-icon" style="background: #fef3c7; color: #f59e0b;">📅</div>
+                    <div class="stat-info">
+                        <h4>Today</h4>
+                        <p class="stat-value">${stats.total.clicks_today || 0}</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <h4>Clicks This Week</h4>
-                    <p class="stat-value">${stats.total.clicks_week || 0}</p>
+                    <div class="stat-icon" style="background: #e0e7ff; color: #6366f1;">📈</div>
+                    <div class="stat-info">
+                        <h4>This Week</h4>
+                        <p class="stat-value">${stats.total.clicks_week || 0}</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="analytics-charts">
-                <div class="chart-card">
-                    <h4>Devices</h4>
-                    <div class="chart-data">
-                        ${stats.devices.length > 0 ? stats.devices.map(d => `
-                            <div class="data-row">
-                                <span>${d.device_type}</span>
-                                <span class="data-value">${d.count}</span>
-                            </div>
-                        `).join('') : '<p>No data yet</p>'}
-                    </div>
-                </div>
+            ${stats.daily && stats.daily.length > 0 ? `
+            <div class="chart-card chart-full">
+                <h4>📊 Clicks Over Time (Last 7 Days)</h4>
+                <canvas id="dailyChart"></canvas>
+            </div>
+            ` : ''}
 
+            <div class="analytics-charts-grid">
+                ${stats.devices && stats.devices.length > 0 ? `
                 <div class="chart-card">
-                    <h4>Operating Systems</h4>
-                    <div class="chart-data">
-                        ${stats.os.length > 0 ? stats.os.map(o => `
-                            <div class="data-row">
-                                <span>${o.os}</span>
-                                <span class="data-value">${o.count}</span>
-                            </div>
-                        `).join('') : '<p>No data yet</p>'}
-                    </div>
+                    <h4>💻 Devices</h4>
+                    <canvas id="devicesChart"></canvas>
                 </div>
+                ` : ''}
 
+                ${stats.os && stats.os.length > 0 ? `
                 <div class="chart-card">
-                    <h4>Browsers</h4>
-                    <div class="chart-data">
-                        ${stats.browsers.length > 0 ? stats.browsers.map(b => `
-                            <div class="data-row">
-                                <span>${b.browser}</span>
-                                <span class="data-value">${b.count}</span>
-                            </div>
-                        `).join('') : '<p>No data yet</p>'}
-                    </div>
+                    <h4>🖥️ Operating Systems</h4>
+                    <canvas id="osChart"></canvas>
                 </div>
+                ` : ''}
+
+                ${stats.browsers && stats.browsers.length > 0 ? `
+                <div class="chart-card">
+                    <h4>🌐 Browsers</h4>
+                    <canvas id="browsersChart"></canvas>
+                </div>
+                ` : ''}
             </div>
         `;
 
+        // Create charts
+        createAnalyticsCharts(stats);
+
         // Scroll to analytics details
-        detailsDiv.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => detailsDiv.scrollIntoView({ behavior: 'smooth' }), 100);
 
     } catch (error) {
         console.error('Error loading link analytics:', error);
         dataDiv.innerHTML = '<div class="error-state"><p>Error loading statistics</p></div>';
+    }
+}
+
+// Create analytics charts with Chart.js
+function createAnalyticsCharts(stats) {
+    const isDark = document.body.classList.contains('dark-theme');
+    const textColor = isDark ? '#f7fafc' : '#1a202c';
+    const gridColor = isDark ? '#2d3748' : '#e2e8f0';
+
+    const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                labels: { color: textColor, font: { size: 12 } }
+            }
+        }
+    };
+
+    // Daily clicks line chart
+    if (stats.daily && stats.daily.length > 0) {
+        const ctx = document.getElementById('dailyChart');
+        if (ctx) {
+            const dates = stats.daily.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })).reverse();
+            const clicks = stats.daily.map(d => parseInt(d.clicks)).reverse();
+
+            analyticsCharts.daily = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Clicks',
+                        data: clicks,
+                        borderColor: '#6366f1',
+                        backgroundColor: isDark ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    ...chartDefaults,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+    }
+
+    // Devices doughnut chart
+    if (stats.devices && stats.devices.length > 0) {
+        const ctx = document.getElementById('devicesChart');
+        if (ctx) {
+            analyticsCharts.devices = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.devices.map(d => d.device_type || 'Unknown'),
+                    datasets: [{
+                        data: stats.devices.map(d => parseInt(d.count)),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
+    }
+
+    // OS doughnut chart
+    if (stats.os && stats.os.length > 0) {
+        const ctx = document.getElementById('osChart');
+        if (ctx) {
+            analyticsCharts.os = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.os.map(o => o.os || 'Unknown'),
+                    datasets: [{
+                        data: stats.os.map(o => parseInt(o.count)),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
+    }
+
+    // Browsers doughnut chart
+    if (stats.browsers && stats.browsers.length > 0) {
+        const ctx = document.getElementById('browsersChart');
+        if (ctx) {
+            analyticsCharts.browsers = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.browsers.map(b => b.browser || 'Unknown'),
+                    datasets: [{
+                        data: stats.browsers.map(b => parseInt(b.count)),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6']
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
     }
 }
 
