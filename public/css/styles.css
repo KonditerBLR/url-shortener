@@ -294,7 +294,7 @@ body.dark-theme .theme-toggle .moon-icon {
 }
 
 .btn-secondary {
-    background: white;
+    background: var(--bg-white);
     color: var(--primary);
     border: 2px solid var(--primary);
 }
@@ -302,6 +302,16 @@ body.dark-theme .theme-toggle .moon-icon {
 .btn-secondary:hover {
     background: var(--bg-light);
     transform: translateY(-2px);
+}
+
+body.dark-theme .btn-secondary {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+body.dark-theme .btn-secondary:hover {
+    background: rgba(102, 126, 234, 0.2);
 }
 
 .btn-hero {
@@ -486,10 +496,15 @@ body.dark-theme .theme-toggle .moon-icon {
 .input-wrapper {
     display: flex;
     gap: 12px;
-    background: white;
+    background: var(--bg-white);
     padding: 8px;
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-theme .input-wrapper {
+    background: var(--bg-white);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .hero-input {
@@ -539,6 +554,11 @@ body.dark-theme .theme-toggle .moon-icon {
     margin: 0 auto;
 }
 
+body.dark-theme .result-box {
+    background: var(--bg-white);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
 .result-content {
     display: flex;
     flex-direction: column;
@@ -584,6 +604,11 @@ body.dark-theme .theme-toggle .moon-icon {
     border-radius: 12px;
     border: 2px solid var(--border);
     background: white;
+}
+
+body.dark-theme .qr-image {
+    background: white;
+    border-color: var(--border);
 }
 
 /* ===== STATS SECTION ===== */
