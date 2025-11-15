@@ -156,8 +156,8 @@
       "subtitle": "Erstellen Sie Ihren ersten Kurzlink, um zu beginnen",
       "button": "+ Ersten Link erstellen"
     }
-    },
-    "analytics": {
+  },
+  "analytics": {
       "clicks_timeline": "Klicks im Zeitverlauf",
       "devices": "Geräte",
       "browsers": "Browser",
