@@ -109,6 +109,15 @@ router.post('/shorten', optionalAuth, async (req, res) => {
     const shortUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/${shortCode}`;
     const qrCode = await QRCode.toDataURL(shortUrl);
 
+    // Fire webhook for link.created event (asynchronously)
+    if (userId) {
+      fireWebhook(userId, 'link.created', {
+        short_code: shortCode,
+        original_url: url,
+        short_url: shortUrl
+      }).catch(err => console.error('Webhook error:', err));
+    }
+
     res.json({
       success: true,
       originalUrl: url,
@@ -1248,6 +1257,15 @@ router.post('/shorten', authenticateApiKey, async (req, res) => {
 
     const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
 
+    // Fire webhook for link.created event (asynchronously)
+    fireWebhook(userId, 'link.created', {
+      short_code: shortCode,
+      original_url: url,
+      short_url: shortUrl,
+      has_password: !!passwordHash,
+      expires_at: expiresAt
+    }).catch(err => console.error('Webhook error:', err));
+
     res.status(201).json({
       ...result.rows[0],
       short_url: shortUrl
@@ -1499,5 +1517,7 @@ router.get('/webhooks/:id/logs', authenticateToken, async (req, res) => {
   }
 });
 
+// Attach fireWebhook to router for external use
+router.fireWebhook = fireWebhook;
+
 module.exports = router;
-module.exports.fireWebhook = fireWebhook;

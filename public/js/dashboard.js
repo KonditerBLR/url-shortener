@@ -717,9 +717,11 @@ async function deleteSelectedLinks() {
     }
 
     const count = selectedLinks.size;
-    if (!confirm(`Are you sure you want to delete ${count} link${count > 1 ? 's' : ''}?`)) {
-        return;
-    }
+    const confirmed = await confirmModal(
+        `Are you sure you want to delete ${count} link${count > 1 ? 's' : ''}? This action cannot be undone.`,
+        'Delete Links'
+    );
+    if (!confirmed) return;
 
     const token = localStorage.getItem('token');
     let successCount = 0;
@@ -1163,9 +1165,11 @@ function renderTagsList() {
 
 // Handle delete tag
 async function handleDeleteTag(tagId) {
-    if (!confirm('Are you sure you want to delete this tag? It will be removed from all links.')) {
-        return;
-    }
+    const confirmed = await confirmModal(
+        'Are you sure you want to delete this tag? It will be removed from all links.',
+        'Delete Tag'
+    );
+    if (!confirmed) return;
 
     const success = await deleteTag(tagId);
     if (success) {
@@ -2278,9 +2282,11 @@ async function createApiKey() {
 }
 
 async function revokeApiKey(keyId, keyName) {
-    if (!confirm(`Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`)) {
-        return;
-    }
+    const confirmed = await confirmModal(
+        `Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`,
+        'Revoke API Key'
+    );
+    if (!confirmed) return;
 
     try {
         const token = localStorage.getItem('token');
@@ -2579,9 +2585,11 @@ async function toggleWebhook(webhookId) {
 }
 
 async function deleteWebhook(webhookId, webhookName) {
-    if (!confirm(`Are you sure you want to delete the webhook "${webhookName}"? This action cannot be undone.`)) {
-        return;
-    }
+    const confirmed = await confirmModal(
+        `Are you sure you want to delete the webhook "${webhookName}"? This action cannot be undone.`,
+        'Delete Webhook'
+    );
+    if (!confirmed) return;
 
     try {
         const token = localStorage.getItem('token');
@@ -2925,7 +2933,11 @@ function downloadQR() {
 }
 
 async function deleteLink(id) {
-    if (!confirm('Are you sure you want to delete this link?')) return;
+    const confirmed = await confirmModal(
+        'Are you sure you want to delete this link? This action cannot be undone.',
+        'Delete Link'
+    );
+    if (!confirmed) return;
 
     try {
         const token = localStorage.getItem('token');

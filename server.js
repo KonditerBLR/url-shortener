@@ -13,7 +13,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || true,
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
@@ -141,6 +144,77 @@ app.get('/verify-email', async (req, res) => {
 
 // Короткие ссылки (должны быть последними)
 app.use('/', routes);
+
+// 404 Handler - must be after all routes
+app.use((req, res) => {
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>404 - Page Not Found</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          text-align: center;
+          padding: 20px;
+        }
+        .container {
+          max-width: 600px;
+        }
+        h1 {
+          font-size: 120px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h2 {
+          font-size: 32px;
+          margin-bottom: 20px;
+          font-weight: 600;
+        }
+        p {
+          font-size: 18px;
+          margin-bottom: 40px;
+          opacity: 0.9;
+        }
+        a {
+          display: inline-block;
+          background: white;
+          color: #667eea;
+          padding: 16px 40px;
+          border-radius: 50px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 18px;
+          transition: transform 0.3s, box-shadow 0.3s;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        a:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/">Go Back Home</a>
+      </div>
+    </body>
+    </html>
+  `);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
