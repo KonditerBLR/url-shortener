@@ -468,6 +468,108 @@ function clearSelection() {
     updateCheckboxes();
 }
 
+// ===== EXPORT FUNCTIONS =====
+
+// Export links to CSV
+function exportToCSV() {
+    if (filteredLinksData.length === 0) {
+        toast.warning('No links to export');
+        return;
+    }
+
+    // CSV headers
+    const headers = ['Short Code', 'Original URL', 'Clicks', 'Created Date', 'Starred', 'Tags'];
+
+    // CSV rows
+    const rows = filteredLinksData.map(link => {
+        const shortCode = link.short_code;
+        const originalUrl = `"${link.original_url.replace(/"/g, '""')}"`;
+        const clicks = link.clicks || 0;
+        const createdDate = new Date(link.created_at).toLocaleString();
+        const starred = link.is_starred ? 'Yes' : 'No';
+        const tags = link.tags && link.tags.length > 0
+            ? `"${link.tags.map(t => t.name).join(', ')}"`
+            : '';
+
+        return [shortCode, originalUrl, clicks, createdDate, starred, tags].join(',');
+    });
+
+    // Combine headers and rows
+    const csv = [headers.join(','), ...rows].join('\n');
+
+    // Create download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `links-export-${Date.now()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Close export menu
+    const menu = document.getElementById('exportMenu');
+    if (menu) menu.classList.remove('show');
+
+    toast.success(`Exported ${filteredLinksData.length} links to CSV`);
+}
+
+// Export links to JSON
+function exportToJSON() {
+    if (filteredLinksData.length === 0) {
+        toast.warning('No links to export');
+        return;
+    }
+
+    // Format data
+    const exportData = filteredLinksData.map(link => ({
+        short_code: link.short_code,
+        original_url: link.original_url,
+        clicks: link.clicks || 0,
+        created_at: link.created_at,
+        is_starred: link.is_starred || false,
+        tags: link.tags || []
+    }));
+
+    const json = JSON.stringify(exportData, null, 2);
+
+    // Create download
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `links-export-${Date.now()}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Close export menu
+    const menu = document.getElementById('exportMenu');
+    if (menu) menu.classList.remove('show');
+
+    toast.success(`Exported ${filteredLinksData.length} links to JSON`);
+}
+
+// Toggle export menu
+function toggleExportMenu() {
+    const menu = document.getElementById('exportMenu');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
+}
+
+// Close export menu when clicking outside
+document.addEventListener('click', (e) => {
+    const exportBtn = document.getElementById('exportBtn');
+    const exportMenu = document.getElementById('exportMenu');
+
+    if (exportBtn && exportMenu && !exportBtn.contains(e.target) && !exportMenu.contains(e.target)) {
+        exportMenu.classList.remove('show');
+    }
+});
+
 // Load all tags
 async function loadTags() {
     try {
@@ -691,6 +793,36 @@ async function showLinks() {
                         </svg>
                         Manage Tags
                     </button>
+                    <div class="export-dropdown">
+                        <button class="btn-secondary" id="exportBtn" onclick="toggleExportMenu()" title="Export links">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Export
+                        </button>
+                        <div class="export-menu" id="exportMenu">
+                            <button onclick="exportToCSV()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="12" y1="18" x2="12" y2="12"/>
+                                    <line x1="9" y1="15" x2="15" y2="15"/>
+                                </svg>
+                                Export as CSV
+                            </button>
+                            <button onclick="exportToJSON()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <path d="M10 12h4"/>
+                                    <path d="M10 16h4"/>
+                                </svg>
+                                Export as JSON
+                            </button>
+                        </div>
+                    </div>
                     <button class="btn-create" onclick="showCreateModal()" data-lang="dashboard.create_link">+ Create Link</button>
                 </div>
             </div>
