@@ -758,6 +758,18 @@ body.dark-theme .sidebar {
     h2, .section-title {
         font-size: 18px;
     }
+
+    /* Time filter - stack vertically */
+    .time-filter {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .time-filter-btn {
+        flex: 1 1 45%;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
 }
 
 /* Very small mobile (360px and below) */
@@ -972,6 +984,43 @@ body.dark-theme .sort-controls select:focus {
 
 .analytics-charts-grid canvas {
     max-height: 280px !important;
+}
+
+/* ===== TIME FILTER =====  */
+.time-filter {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-light);
+    padding: 4px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+}
+
+body.dark-theme .time-filter {
+    background: #1a202c;
+    border-color: #1a202c;
+}
+
+.time-filter-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-gray);
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-filter-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary);
+}
+
+.time-filter-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
 }
 
 /* Stat cards with icons */

@@ -141,6 +141,7 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
 router.get('/urls/:id/stats', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const { period = 'all' } = req.query; // today, week, month, all
     const userId = req.user.userId;
 
     // Проверяем что ссылка принадлежит пользователю
@@ -153,53 +154,78 @@ router.get('/urls/:id/stats', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Link not found' });
     }
 
+    // Определяем фильтр по времени
+    let timeFilter = '';
+    let daysInterval = 7;
+
+    switch(period) {
+      case 'today':
+        timeFilter = "AND clicked_at > NOW() - INTERVAL '1 day'";
+        daysInterval = 1;
+        break;
+      case 'week':
+        timeFilter = "AND clicked_at > NOW() - INTERVAL '7 days'";
+        daysInterval = 7;
+        break;
+      case 'month':
+        timeFilter = "AND clicked_at > NOW() - INTERVAL '30 days'";
+        daysInterval = 30;
+        break;
+      case 'all':
+      default:
+        timeFilter = '';
+        daysInterval = 30;
+        break;
+    }
+
     // Общая статистика
     const totalStats = await db.query(
-      `SELECT 
+      `SELECT
         COUNT(*) as total_clicks,
         COUNT(*) FILTER (WHERE is_unique = TRUE) as unique_clicks,
         COUNT(*) FILTER (WHERE clicked_at > NOW() - INTERVAL '1 day') as clicks_today,
         COUNT(*) FILTER (WHERE clicked_at > NOW() - INTERVAL '7 days') as clicks_week,
         COUNT(*) FILTER (WHERE clicked_at > NOW() - INTERVAL '30 days') as clicks_month
-       FROM clicks WHERE url_id = $1`,
+       FROM clicks WHERE url_id = $1 ${timeFilter}`,
       [id]
     );
 
     // Статистика по устройствам
     const deviceStats = await db.query(
-      `SELECT device_type, COUNT(*) as count 
-       FROM clicks WHERE url_id = $1 
+      `SELECT device_type, COUNT(*) as count
+       FROM clicks WHERE url_id = $1 ${timeFilter}
        GROUP BY device_type`,
       [id]
     );
 
     // Статистика по ОС
     const osStats = await db.query(
-      `SELECT os, COUNT(*) as count 
-       FROM clicks WHERE url_id = $1 
-       GROUP BY os 
+      `SELECT os, COUNT(*) as count
+       FROM clicks WHERE url_id = $1 ${timeFilter}
+       GROUP BY os
        ORDER BY count DESC`,
       [id]
     );
 
     // Статистика по браузерам
     const browserStats = await db.query(
-      `SELECT browser, COUNT(*) as count 
-       FROM clicks WHERE url_id = $1 
-       GROUP BY browser 
+      `SELECT browser, COUNT(*) as count
+       FROM clicks WHERE url_id = $1 ${timeFilter}
+       GROUP BY browser
        ORDER BY count DESC`,
       [id]
     );
 
-    // Клики по дням (последние 7 дней)
+    // Клики по дням (по выбранному периоду)
     const dailyStats = await db.query(
-      `SELECT 
+      `SELECT
         DATE(clicked_at) as date,
         COUNT(*) as clicks
-       FROM clicks 
-       WHERE url_id = $1 AND clicked_at > NOW() - INTERVAL '7 days'
+       FROM clicks
+       WHERE url_id = $1 ${timeFilter}
        GROUP BY DATE(clicked_at)
-       ORDER BY date DESC`,
+       ORDER BY date DESC
+       LIMIT ${daysInterval}`,
       [id]
     );
 
@@ -208,7 +234,8 @@ router.get('/urls/:id/stats', authenticateToken, async (req, res) => {
       devices: deviceStats.rows,
       os: osStats.rows,
       browsers: browserStats.rows,
-      daily: dailyStats.rows
+      daily: dailyStats.rows,
+      period: period
     });
   } catch (error) {
     console.error('Error fetching stats:', error);

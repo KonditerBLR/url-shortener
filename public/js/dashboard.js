@@ -608,16 +608,34 @@ async function showAnalytics() {
 let analyticsCharts = {};
 
 // View detailed analytics for a specific link
-async function viewLinkAnalytics(linkId, shortCode) {
+// Current analytics state
+let currentAnalyticsLink = null;
+let currentAnalyticsPeriod = 'all';
+
+async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
     const detailsDiv = document.getElementById('analyticsDetails');
     const dataDiv = document.getElementById('analyticsData');
+
+    // Store current link and period
+    currentAnalyticsLink = { id: linkId, code: shortCode };
+    currentAnalyticsPeriod = period;
 
     // Destroy existing charts
     Object.values(analyticsCharts).forEach(chart => chart?.destroy());
     analyticsCharts = {};
 
     detailsDiv.style.display = 'block';
-    document.getElementById('analyticsLinkTitle').textContent = `Statistics for: ${shortCode}`;
+    document.getElementById('analyticsLinkTitle').innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <span>Statistics for: ${shortCode}</span>
+            <div class="time-filter">
+                <button class="time-filter-btn ${period === 'today' ? 'active' : ''}" onclick="filterAnalyticsByTime('today')">Today</button>
+                <button class="time-filter-btn ${period === 'week' ? 'active' : ''}" onclick="filterAnalyticsByTime('week')">Week</button>
+                <button class="time-filter-btn ${period === 'month' ? 'active' : ''}" onclick="filterAnalyticsByTime('month')">Month</button>
+                <button class="time-filter-btn ${period === 'all' ? 'active' : ''}" onclick="filterAnalyticsByTime('all')">All Time</button>
+            </div>
+        </div>
+    `;
     dataDiv.innerHTML = `
         ${SkeletonLoader.statsCards()}
         ${SkeletonLoader.chart()}
@@ -628,7 +646,7 @@ async function viewLinkAnalytics(linkId, shortCode) {
     `;
 
     try {
-        const response = await fetch(`/api/urls/${linkId}/stats`, {
+        const response = await fetch(`/api/urls/${linkId}/stats?period=${period}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -707,6 +725,12 @@ async function viewLinkAnalytics(linkId, shortCode) {
         console.error('Error loading link analytics:', error);
         dataDiv.innerHTML = '<div class="error-state"><p>Error loading statistics</p></div>';
     }
+}
+
+// Filter analytics by time period
+function filterAnalyticsByTime(period) {
+    if (!currentAnalyticsLink) return;
+    viewLinkAnalytics(currentAnalyticsLink.id, currentAnalyticsLink.code, period);
 }
 
 // Create analytics charts with Chart.js
