@@ -657,6 +657,25 @@ function logout() {
     window.location.href = '/';
 }
 
+// Тёмная тема
+function toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+// Загрузка сохранённой темы
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+}
+
+// Вызываем при загрузке страницы
+loadSavedTheme();
+
 // Edit link
 let editingLinkId = null;
 

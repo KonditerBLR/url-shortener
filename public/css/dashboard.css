@@ -2,13 +2,13 @@
 .dashboard-page {
     display: flex;
     min-height: 100vh;
-    background: #f7fafc;
+    background: var(--bg-light);
 }
 
 /* ===== SIDEBAR ===== */
 .sidebar {
     width: 260px;
-    background: white;
+    background: var(--bg-white);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -92,7 +92,7 @@
 }
 
 .dashboard-header {
-    background: white;
+    background: var(--bg-white);
     border-bottom: 1px solid var(--border);
     padding: 20px 32px;
     display: flex;
@@ -164,7 +164,7 @@
 }
 
 .stat-card {
-    background: white;
+    background: var(--bg-white);
     border-radius: 16px;
     padding: 24px;
     border: 1px solid var(--border);
@@ -218,7 +218,7 @@
 
 /* ===== LINKS TABLE ===== */
 .links-section {
-    background: white;
+    background: var(--bg-white);
     border-radius: 16px;
     border: 1px solid var(--border);
     overflow: hidden;
@@ -350,7 +350,7 @@
 }
 
 .profile-card {
-    background: white;
+    background: var(--bg-white);
     border-radius: 16px;
     border: 1px solid var(--border);
     padding: 32px;
@@ -405,7 +405,7 @@
 
 .modal-content {
     position: relative;
-    background: white;
+    background: var(--bg-white);
     padding: 40px;
     border-radius: 24px;
     max-width: 500px;
