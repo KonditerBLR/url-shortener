@@ -302,6 +302,9 @@ let selectedTagFilter = null;
 // ===== STARRED MANAGEMENT =====
 let showOnlyStarred = false;
 
+// ===== BULK ACTIONS =====
+let selectedLinks = new Set();
+
 // Toggle starred status
 async function toggleStarred(urlId) {
     try {
@@ -336,6 +339,133 @@ function toggleStarredFilter() {
         btn.classList.toggle('active', showOnlyStarred);
     }
     filterLinks();
+}
+
+// ===== BULK ACTIONS FUNCTIONS =====
+
+// Toggle select all links
+function toggleSelectAll() {
+    const checkbox = document.getElementById('selectAllCheckbox');
+    const isChecked = checkbox.checked;
+
+    if (isChecked) {
+        // Select all visible links
+        filteredLinksData.forEach(link => selectedLinks.add(link.id));
+    } else {
+        // Deselect all
+        selectedLinks.clear();
+    }
+
+    updateBulkActionsBar();
+    updateCheckboxes();
+}
+
+// Toggle single link selection
+function toggleSelectLink(linkId) {
+    if (selectedLinks.has(linkId)) {
+        selectedLinks.delete(linkId);
+    } else {
+        selectedLinks.add(linkId);
+    }
+
+    updateBulkActionsBar();
+    updateSelectAllCheckbox();
+}
+
+// Update bulk actions bar visibility and count
+function updateBulkActionsBar() {
+    const bar = document.getElementById('bulkActionsBar');
+    const count = document.getElementById('selectedCount');
+
+    if (!bar || !count) return;
+
+    if (selectedLinks.size > 0) {
+        bar.style.display = 'flex';
+        count.textContent = selectedLinks.size;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+// Update individual checkboxes state
+function updateCheckboxes() {
+    filteredLinksData.forEach(link => {
+        const checkbox = document.getElementById(`checkbox-${link.id}`);
+        if (checkbox) {
+            checkbox.checked = selectedLinks.has(link.id);
+        }
+    });
+}
+
+// Update select all checkbox state
+function updateSelectAllCheckbox() {
+    const selectAll = document.getElementById('selectAllCheckbox');
+    if (!selectAll) return;
+
+    const visibleIds = filteredLinksData.map(l => l.id);
+    const allVisibleSelected = visibleIds.length > 0 &&
+                                visibleIds.every(id => selectedLinks.has(id));
+
+    selectAll.checked = allVisibleSelected;
+    selectAll.indeterminate = selectedLinks.size > 0 && !allVisibleSelected;
+}
+
+// Delete selected links
+async function deleteSelectedLinks() {
+    if (selectedLinks.size === 0) {
+        toast.warning('No links selected');
+        return;
+    }
+
+    const count = selectedLinks.size;
+    if (!confirm(`Are you sure you want to delete ${count} link${count > 1 ? 's' : ''}?`)) {
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    let successCount = 0;
+    let failCount = 0;
+
+    // Delete links one by one
+    for (const linkId of selectedLinks) {
+        try {
+            const response = await fetch(`/api/urls/${linkId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                successCount++;
+            } else {
+                failCount++;
+            }
+        } catch (error) {
+            console.error('Error deleting link:', linkId, error);
+            failCount++;
+        }
+    }
+
+    // Clear selection
+    selectedLinks.clear();
+
+    // Show result
+    if (successCount > 0) {
+        toast.success(`${successCount} link${successCount > 1 ? 's' : ''} deleted successfully`);
+    }
+    if (failCount > 0) {
+        toast.error(`Failed to delete ${failCount} link${failCount > 1 ? 's' : ''}`);
+    }
+
+    // Reload links
+    await showLinks();
+}
+
+// Clear selection
+function clearSelection() {
+    selectedLinks.clear();
+    updateBulkActionsBar();
+    updateSelectAllCheckbox();
+    updateCheckboxes();
 }
 
 // Load all tags
@@ -588,6 +718,25 @@ async function showLinks() {
                 </div>
             </div>
 
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                <div class="bulk-actions-info">
+                    <span><strong id="selectedCount">0</strong> selected</span>
+                </div>
+                <div class="bulk-actions-buttons">
+                    <button class="btn-bulk-action" onclick="clearSelection()">
+                        Clear Selection
+                    </button>
+                    <button class="btn-bulk-action btn-bulk-delete" onclick="deleteSelectedLinks()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+
             <div id="allLinksTable">
                 ${SkeletonLoader.linksTable(5)}
             </div>
@@ -598,6 +747,9 @@ async function showLinks() {
     await loadTags();
     allLinksData = await loadLinks();
     filteredLinksData = [...allLinksData];
+
+    // Clear selection when reloading
+    selectedLinks.clear();
 
     // Render tag filters
     renderTagFilters();
@@ -718,10 +870,21 @@ function toggleSortOrder() {
 // Рендер таблицы ссылок
 function renderLinksTable(links, containerId) {
     const container = document.getElementById(containerId);
+    const showBulkActions = containerId === 'allLinksTable'; // Only show in main links table
+
     container.innerHTML = `
         <table class="links-table">
             <thead>
                 <tr>
+                    ${showBulkActions ? `
+                        <th style="width: 40px;">
+                            <input type="checkbox"
+                                   id="selectAllCheckbox"
+                                   class="link-checkbox"
+                                   onchange="toggleSelectAll()"
+                                   title="Select all">
+                        </th>
+                    ` : ''}
                     <th data-lang="dashboard.table.short_link">Short Link</th>
                     <th data-lang="dashboard.table.original">Original URL</th>
                     <th data-lang="dashboard.table.clicks">Clicks</th>
@@ -732,6 +895,15 @@ function renderLinksTable(links, containerId) {
             <tbody>
                 ${links.map(link => `
                     <tr>
+                        ${showBulkActions ? `
+                            <td>
+                                <input type="checkbox"
+                                       id="checkbox-${link.id}"
+                                       class="link-checkbox"
+                                       onchange="toggleSelectLink(${link.id})"
+                                       ${selectedLinks.has(link.id) ? 'checked' : ''}>
+                            </td>
+                        ` : ''}
                         <td>
                             <a href="${window.location.origin}/${link.short_code}" target="_blank" class="link-short">
                                 ${window.location.host}/${link.short_code}
