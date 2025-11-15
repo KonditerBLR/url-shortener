@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+require('dotenv').config(); // Load environment variables FIRST
 
 console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL);
 
