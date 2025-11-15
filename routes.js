@@ -125,11 +125,13 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Get all user URLs with their tags, starred status and description
+    // Get all user URLs with their tags, starred status, description and archived status
     const result = await db.query(
       `SELECT
         u.id, u.original_url, u.short_code, u.clicks, u.created_at,
         COALESCE(u.is_starred, FALSE) as is_starred,
+        COALESCE(u.is_archived, FALSE) as is_archived,
+        u.archived_at,
         u.description,
         COALESCE(
           json_agg(
@@ -604,6 +606,44 @@ router.put('/urls/:id/description', authenticateToken, async (req, res) => {
     res.json({ description: result.rows[0].description });
   } catch (error) {
     console.error('Error updating description:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ===== ARCHIVED LINKS =====
+
+// Toggle archived status
+router.post('/urls/:id/archived', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT is_archived FROM urls WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    // Toggle archived
+    const currentArchived = urlCheck.rows[0].is_archived;
+    const newArchived = !currentArchived;
+    const archivedAt = newArchived ? new Date() : null;
+
+    const result = await db.query(
+      'UPDATE urls SET is_archived = $1, archived_at = $2 WHERE id = $3 RETURNING is_archived, archived_at',
+      [newArchived, archivedAt, id]
+    );
+
+    res.json({
+      is_archived: result.rows[0].is_archived,
+      archived_at: result.rows[0].archived_at
+    });
+  } catch (error) {
+    console.error('Error toggling archived:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

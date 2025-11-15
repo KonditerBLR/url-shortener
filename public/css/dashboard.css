@@ -496,6 +496,25 @@ body.dark-theme .btn-action.btn-star.starred:hover {
     background: rgba(251, 191, 36, 0.3);
 }
 
+/* ===== ARCHIVE BUTTON ===== */
+
+.btn-action.btn-archive {
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+}
+
+.btn-action.btn-archive:hover {
+    background: #dbeafe;
+    color: #3b82f6;
+    transform: scale(1.1);
+}
+
+/* Dark theme for archive button */
+body.dark-theme .btn-action.btn-archive:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
 .empty-state {
     padding: 80px 24px;
     text-align: center;

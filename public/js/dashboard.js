@@ -302,6 +302,9 @@ let selectedTagFilter = null;
 // ===== STARRED MANAGEMENT =====
 let showOnlyStarred = false;
 
+// ===== ARCHIVED MANAGEMENT =====
+let showArchivedLinks = false;
+
 // ===== BULK ACTIONS =====
 let selectedLinks = new Set();
 
@@ -337,6 +340,46 @@ function toggleStarredFilter() {
     const btn = document.getElementById('starredFilterBtn');
     if (btn) {
         btn.classList.toggle('active', showOnlyStarred);
+    }
+    filterLinks();
+}
+
+// ===== ARCHIVED MANAGEMENT FUNCTIONS =====
+
+// Toggle archived status
+async function toggleArchived(urlId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/archived`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.is_archived = data.is_archived;
+                link.archived_at = data.archived_at;
+            }
+            // Refresh display
+            filterLinks();
+            toast.success(data.is_archived ? 'Link archived' : 'Link restored from archive');
+        }
+    } catch (error) {
+        console.error('Error toggling archived:', error);
+        toast.error('Failed to update archived status');
+    }
+}
+
+// Toggle show archived filter
+function toggleArchivedFilter() {
+    showArchivedLinks = !showArchivedLinks;
+    const btn = document.getElementById('archivedFilterBtn');
+    if (btn) {
+        btn.classList.toggle('active', showArchivedLinks);
+        btn.textContent = showArchivedLinks ? 'Hide Archived' : 'Show Archived';
     }
     filterLinks();
 }
@@ -890,6 +933,14 @@ async function showLinks() {
                         </svg>
                         Favorites
                     </button>
+                    <button class="btn-secondary" id="archivedFilterBtn" onclick="toggleArchivedFilter()" title="Show archived links">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="21 8 21 21 3 21 3 8"/>
+                            <rect x="1" y="3" width="22" height="5"/>
+                            <line x1="10" y1="12" x2="14" y2="12"/>
+                        </svg>
+                        Show Archived
+                    </button>
                     <button class="btn-secondary" onclick="showTagsManager()" title="Manage Tags">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
@@ -1062,7 +1113,10 @@ function filterLinks() {
         // Starred filter
         const matchesStarred = !showOnlyStarred || link.is_starred;
 
-        return matchesSearch && matchesTag && matchesStarred;
+        // Archived filter - only show archived if explicitly requested
+        const matchesArchived = showArchivedLinks ? link.is_archived : !link.is_archived;
+
+        return matchesSearch && matchesTag && matchesStarred && matchesArchived;
     });
 
     sortLinks();
@@ -1206,6 +1260,13 @@ function renderLinksTable(links, containerId) {
                                 </button>
                                 <button class="btn-action" onclick="showQR('${link.short_code}')" title="QR Code">
                                     <span style="font-size: 12px; font-weight: 700;">QR</span>
+                                </button>
+                                <button class="btn-action btn-archive" onclick="toggleArchived(${link.id})" title="${link.is_archived ? 'Restore from archive' : 'Archive link'}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="21 8 21 21 3 21 3 8"/>
+                                        <rect x="1" y="3" width="22" height="5"/>
+                                        <line x1="10" y1="12" x2="14" y2="12"/>
+                                    </svg>
                                 </button>
                                 <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
