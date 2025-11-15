@@ -1,3 +1,18 @@
+// ===== THEME TOGGLE =====
+window.toggleTheme = function() {
+    const body = document.body;
+    const isDark = body.classList.toggle('dark-theme');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+};
+
+// Load saved theme on page load
+(function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+})();
+
 // Глобальные функции для языка (будут переопределены в lang.js)
 window.switchLanguage = function(lang) {
     localStorage.setItem('lang', lang);
