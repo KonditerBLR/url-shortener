@@ -365,6 +365,186 @@ function showProfile() {
     }
 }
 
+// Analytics Page
+async function showAnalytics() {
+    const content = document.getElementById('dashboardContent');
+
+    content.innerHTML = `
+        <div class="analytics-section">
+            <div class="section-header">
+                <h2 class="section-title" data-lang="dashboard.analytics.title">Analytics</h2>
+                <p data-lang="dashboard.analytics.subtitle">Detailed statistics for your links</p>
+            </div>
+
+            <div class="analytics-content">
+                <div class="links-list" id="analyticsLinksList">
+                    <div class="loading">Loading links...</div>
+                </div>
+
+                <div class="analytics-details" id="analyticsDetails" style="display: none;">
+                    <h3 id="analyticsLinkTitle">Link Statistics</h3>
+                    <div id="analyticsData"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (typeof updatePageLanguage === 'function') {
+        updatePageLanguage();
+    }
+
+    // Load links for analytics
+    try {
+        const response = await fetch('/api/urls/user', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const links = await response.json();
+
+        const linksListDiv = document.getElementById('analyticsLinksList');
+
+        if (links.length === 0) {
+            linksListDiv.innerHTML = `
+                <div class="empty-state">
+                    <p>No links yet. Create your first link to see analytics!</p>
+                </div>
+            `;
+            return;
+        }
+
+        linksListDiv.innerHTML = `
+            <div class="links-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Link</th>
+                            <th>Clicks</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${links.map(link => `
+                            <tr class="link-row">
+                                <td>
+                                    <div class="link-info">
+                                        <a href="/${link.short_code}" target="_blank" class="short-link">
+                                            ${link.short_code}
+                                        </a>
+                                        <div class="original-url">${link.original_url.substring(0, 50)}${link.original_url.length > 50 ? '...' : ''}</div>
+                                    </div>
+                                </td>
+                                <td><strong>${link.clicks || 0}</strong></td>
+                                <td>${new Date(link.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn-icon" onclick="viewLinkAnalytics(${link.id}, '${link.short_code}')" title="View Analytics">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 3v18h18" />
+                                            <path d="M18 17l-5-5-4 4-4-4" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+        document.getElementById('analyticsLinksList').innerHTML = `
+            <div class="error-state">
+                <p>Error loading links. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+// View detailed analytics for a specific link
+async function viewLinkAnalytics(linkId, shortCode) {
+    const detailsDiv = document.getElementById('analyticsDetails');
+    const dataDiv = document.getElementById('analyticsData');
+
+    detailsDiv.style.display = 'block';
+    document.getElementById('analyticsLinkTitle').textContent = `Statistics for: ${shortCode}`;
+    dataDiv.innerHTML = '<div class="loading">Loading statistics...</div>';
+
+    try {
+        const response = await fetch(`/api/urls/${linkId}/stats`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const stats = await response.json();
+
+        dataDiv.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Clicks</h4>
+                    <p class="stat-value">${stats.total.total_clicks || 0}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Unique Clicks</h4>
+                    <p class="stat-value">${stats.total.unique_clicks || 0}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Clicks Today</h4>
+                    <p class="stat-value">${stats.total.clicks_today || 0}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Clicks This Week</h4>
+                    <p class="stat-value">${stats.total.clicks_week || 0}</p>
+                </div>
+            </div>
+
+            <div class="analytics-charts">
+                <div class="chart-card">
+                    <h4>Devices</h4>
+                    <div class="chart-data">
+                        ${stats.devices.length > 0 ? stats.devices.map(d => `
+                            <div class="data-row">
+                                <span>${d.device_type}</span>
+                                <span class="data-value">${d.count}</span>
+                            </div>
+                        `).join('') : '<p>No data yet</p>'}
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h4>Operating Systems</h4>
+                    <div class="chart-data">
+                        ${stats.os.length > 0 ? stats.os.map(o => `
+                            <div class="data-row">
+                                <span>${o.os}</span>
+                                <span class="data-value">${o.count}</span>
+                            </div>
+                        `).join('') : '<p>No data yet</p>'}
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h4>Browsers</h4>
+                    <div class="chart-data">
+                        ${stats.browsers.length > 0 ? stats.browsers.map(b => `
+                            <div class="data-row">
+                                <span>${b.browser}</span>
+                                <span class="data-value">${b.count}</span>
+                            </div>
+                        `).join('') : '<p>No data yet</p>'}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Scroll to analytics details
+        detailsDiv.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error('Error loading link analytics:', error);
+        dataDiv.innerHTML = '<div class="error-state"><p>Error loading statistics</p></div>';
+    }
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -396,6 +576,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (page === 'links') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.links');
                 showLinks();
+            } else if (page === 'analytics') {
+                document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.analytics');
+                showAnalytics();
             } else if (page === 'profile') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.profile');
                 showProfile();

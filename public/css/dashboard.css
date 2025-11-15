@@ -533,3 +533,13 @@ body.dark-theme .form-group textarea:focus {
 body.dark-theme .btn-logout:hover {
     background: rgba(245, 101, 101, 0.1);
 }
+
+body.dark-theme .profile-card {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+body.dark-theme .form-group input:disabled {
+    background: rgba(26, 32, 44, 0.5);
+    color: var(--text-gray);
+}
