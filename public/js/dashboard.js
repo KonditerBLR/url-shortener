@@ -227,6 +227,10 @@ async function loadOverviewData() {
 }
 
 // Отображение всех ссылок
+let allLinksData = [];
+let filteredLinksData = [];
+let currentSort = { field: 'created_at', order: 'desc' };
+
 async function showLinks() {
     const content = document.getElementById('dashboardContent');
     content.innerHTML = `
@@ -235,12 +239,37 @@ async function showLinks() {
                 <h2 class="section-title" data-lang="dashboard.all_links">All Links</h2>
                 <button class="btn-create" onclick="showCreateModal()" data-lang="dashboard.create_link">+ Create Link</button>
             </div>
+
+            <div class="links-controls">
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="linkSearch" placeholder="Search links..." oninput="filterLinks()">
+                </div>
+                <div class="sort-controls">
+                    <select id="sortField" onchange="sortLinks()">
+                        <option value="created_at">Sort by Date</option>
+                        <option value="clicks">Sort by Clicks</option>
+                        <option value="short_code">Sort by Name</option>
+                    </select>
+                    <button class="btn-icon" onclick="toggleSortOrder()" title="Toggle sort order">
+                        <svg id="sortIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M19 12l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
             <div id="allLinksTable"></div>
         </div>
     `;
 
-    const links = await loadLinks();
-    if (!links || links.length === 0) {
+    allLinksData = await loadLinks();
+    filteredLinksData = [...allLinksData];
+
+    if (!allLinksData || allLinksData.length === 0) {
         document.getElementById('allLinksTable').innerHTML = `
             <div class="empty-state">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,12 +282,62 @@ async function showLinks() {
             </div>
         `;
     } else {
-        renderLinksTable(links, 'allLinksTable');
+        sortLinks();
     }
 
     if (typeof updatePageLanguage === 'function') {
         updatePageLanguage();
     }
+}
+
+function filterLinks() {
+    const query = document.getElementById('linkSearch').value.toLowerCase();
+
+    if (!query) {
+        filteredLinksData = [...allLinksData];
+    } else {
+        filteredLinksData = allLinksData.filter(link =>
+            link.short_code.toLowerCase().includes(query) ||
+            link.original_url.toLowerCase().includes(query)
+        );
+    }
+
+    sortLinks();
+}
+
+function sortLinks() {
+    const field = document.getElementById('sortField')?.value || currentSort.field;
+    currentSort.field = field;
+
+    filteredLinksData.sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+
+        if (field === 'created_at') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        } else if (field === 'clicks') {
+            aVal = parseInt(aVal) || 0;
+            bVal = parseInt(bVal) || 0;
+        }
+
+        if (currentSort.order === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+
+    renderLinksTable(filteredLinksData, 'allLinksTable');
+}
+
+function toggleSortOrder() {
+    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+    const icon = document.getElementById('sortIcon');
+    if (icon) {
+        icon.style.transform = currentSort.order === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    sortLinks();
 }
 
 // Рендер таблицы ссылок

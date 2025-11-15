@@ -122,7 +122,7 @@
     <!-- Create Link Modal -->
     <div class="modal" id="createLinkModal">
         <div class="modal-overlay" onclick="closeCreateModal()"></div>
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <button class="modal-close" onclick="closeCreateModal()">×</button>
             <h2 id="createModalTitle" data-lang="dashboard.create_modal.title">Create Short Link</h2>
 
@@ -130,6 +130,58 @@
                 <label for="createUrl" data-lang="dashboard.create_modal.url_label">Enter URL:</label>
                 <input type="text" id="createUrl" data-lang="dashboard.create_modal.url_placeholder"
                     placeholder="https://example.com/very-long-url">
+            </div>
+
+            <!-- Custom Short Code -->
+            <div class="input-group">
+                <label for="customCode">
+                    Custom Short Code (Optional)
+                    <span class="help-text">Leave empty for auto-generated code</span>
+                </label>
+                <div class="custom-code-wrapper">
+                    <span class="code-prefix">/</span>
+                    <input type="text" id="customCode" placeholder="my-custom-link" maxlength="50">
+                </div>
+            </div>
+
+            <!-- UTM Builder Toggle -->
+            <div class="toggle-section">
+                <button type="button" class="toggle-btn" onclick="toggleUTMBuilder()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    UTM Parameters (Advanced)
+                    <svg id="utmToggleIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- UTM Builder (Hidden by default) -->
+            <div id="utmBuilder" class="utm-builder" style="display: none;">
+                <div class="utm-grid">
+                    <div class="input-group">
+                        <label for="utmSource">Source</label>
+                        <input type="text" id="utmSource" placeholder="google, facebook, newsletter">
+                    </div>
+                    <div class="input-group">
+                        <label for="utmMedium">Medium</label>
+                        <input type="text" id="utmMedium" placeholder="cpc, email, social">
+                    </div>
+                    <div class="input-group">
+                        <label for="utmCampaign">Campaign</label>
+                        <input type="text" id="utmCampaign" placeholder="summer_sale">
+                    </div>
+                    <div class="input-group">
+                        <label for="utmTerm">Term (Optional)</label>
+                        <input type="text" id="utmTerm" placeholder="running+shoes">
+                    </div>
+                    <div class="input-group">
+                        <label for="utmContent">Content (Optional)</label>
+                        <input type="text" id="utmContent" placeholder="logolink, textlink">
+                    </div>
+                </div>
             </div>
 
             <div class="error" id="createError"></div>
