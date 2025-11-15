@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutTo - Professional Link Shortening</title>
+    <meta name="description" content="Create short links, track clicks, and generate QR codes with CutTo">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="landing">
+    <!-- Header -->
+    <header class="header">
+        <div class="container-wide">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">✨</span>
+                    <span class="logo-text">CutTo</span>
+                </div>
+                <nav class="nav">
+                    <div class="lang-dropdown">
+                        <button class="lang-current" onclick="toggleLangMenu()">
+                            <span id="currentLangFlag">🇬🇧</span>
+                            <span id="currentLangCode">EN</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                                <path d="M6 8l-4-4h8z" />
+                            </svg>
+                        </button>
+                        <div class="lang-menu" id="langMenu">
+                            <!-- Языки генерируются автоматически из languages.json -->
+                        </div>
+                    </div>
+                    <button class="btn-secondary" data-lang="header.login" onclick="showLoginModal()">Login</button>
+                    <button class="btn-primary" data-lang="header.register" onclick="showRegisterModal()">Sign
+                        Up</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title" data-lang="hero.title">Turn Long Links into Short and Powerful Ones</h1>
+                <p class="hero-subtitle" data-lang="hero.subtitle">Create short links, track click statistics, and
+                    generate QR codes in seconds</p>
+
+                <!-- Quick Shortener -->
+                <div class="quick-shortener">
+                    <div class="input-wrapper">
+                        <input type="text" id="heroUrlInput" data-lang="hero.input_placeholder"
+                            placeholder="Paste your long link here..." class="hero-input">
+                        <button class="btn-hero" data-lang="hero.button" onclick="heroShorten()">Shorten</button>
+                    </div>
+                    <p class="hint" data-lang="hero.hint">Free, no registration • Create an account for advanced
+                        analytics</p>
+                </div>
+
+                <!-- Result -->
+                <div class="hero-result" id="heroResult" style="display: none;">
+                    <div class="result-box">
+                        <div class="result-content">
+                            <span class="result-label" data-lang="result.label">Your short link:</span>
+                            <div class="result-url">
+                                <input type="text" id="heroShortUrl" readonly>
+                                <button class="btn-copy" data-lang="result.copy" onclick="copyHeroUrl()">Copy</button>
+                            </div>
+                            <div class="result-qr">
+                                <span class="result-label" data-lang="result.qr_label">QR Code:</span>
+                                <img id="heroQrCode" src="" alt="QR Code" class="qr-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animated background shapes -->
+        <div class="hero-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="25000">0</div>
+                    <div class="stat-label" data-lang="stats.links_created">Links Created</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="2500">0</div>
+                    <div class="stat-label" data-lang="stats.active_users">Active Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="99.9">0</div>
+                    <div class="stat-label" data-lang="stats.uptime">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="500000">0</div>
+                    <div class="stat-label" data-lang="stats.monthly_clicks">Monthly Clicks</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title" data-lang="how_it_works.title">How It Works?</h2>
+            <p class="section-subtitle" data-lang="how_it_works.subtitle">Three simple steps to your first short link
+            </p>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="how_it_works.step1_title">Paste Your Link</h3>
+                    <p data-lang="how_it_works.step1_desc">Copy your long link and paste it in the field above</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="how_it_works.step2_title">Get Short Link</h3>
+                    <p data-lang="how_it_works.step2_desc">Instantly receive a shortened link and QR code</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="how_it_works.step3_title">Track Clicks</h3>
+                    <p data-lang="how_it_works.step3_desc">Analyze click statistics in your personal dashboard</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title" data-lang="features.title">Why Choose CutTo?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature1_title">Instant Shortening</h3>
+                    <p data-lang="features.feature1_desc">Create short and memorable links in seconds</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M3 3v18h18" />
+                            <path d="M18 17l-5-5-4 4-4-4" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature2_title">Detailed Analytics</h3>
+                    <p data-lang="features.feature2_desc">Track clicks, geography, and traffic sources</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path
+                                d="M7 7h.01M7 12h.01M7 17h.01M12 7h.01M12 12h.01M12 17h.01M17 7h.01M17 12h.01M17 17h.01" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature3_title">QR Codes</h3>
+                    <p data-lang="features.feature3_desc">Automatic QR code generation for print materials</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature4_title">Security</h3>
+                    <p data-lang="features.feature4_desc">Your data is protected and always under your control</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature5_title">High Speed</h3>
+                    <p data-lang="features.feature5_desc">Lightning-fast processing and redirect without delays</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 7h-9M14 17H5M17 3v18M7 3v18" />
+                        </svg>
+                    </div>
+                    <h3 data-lang="features.feature6_title">For Business</h3>
+                    <p data-lang="features.feature6_desc">Perfect for marketing and link management</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 data-lang="cta.title">Ready to Start?</h2>
+                <p data-lang="cta.subtitle">Create a free account and get access to advanced analytics</p>
+                <button class="btn-cta" data-lang="cta.button" onclick="showRegisterModal()">Create Free
+                    Account</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-icon">✨</span>
+                        <span class="logo-text">CutTo</span>
+                    </div>
+                    <p data-lang="footer.tagline">Professional link shortening with analytics</p>
+                </div>
+                <div class="footer-copy">
+                    <p data-lang="footer.copyright">© 2025 CutTo. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-overlay" onclick="closeAuthModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAuthModal()">×</button>
+            <h2 id="modalTitle">Login</h2>
+            <div class="input-group">
+                <label for="authEmail">Email:</label>
+                <input type="email" id="authEmail" placeholder="your@email.com">
+            </div>
+            <div class="input-group">
+                <label for="authPassword">Password:</label>
+                <input type="password" id="authPassword" placeholder="Minimum 8 characters, letters and numbers">
+            </div>
+            <div class="input-group" id="confirmPasswordGroup" style="display: none;">
+                <label for="authPasswordConfirm">Confirm Password:</label>
+                <input type="password" id="authPasswordConfirm" placeholder="Repeat password">
+            </div>
+            <div class="error" id="authError"></div>
+            <div class="success" id="authSuccess"></div>
+            <button class="btn-primary btn-full" id="authSubmitBtn">Login</button>
+            <button class="btn-text" id="switchBtn">Don't have an account? Sign up</button>
+            <button class="btn-text" id="forgotPasswordBtn" style="display: none;">Forgot password?</button>
+        </div>
+    </div>
+
+    <script src="/js/lang.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+
+</html>

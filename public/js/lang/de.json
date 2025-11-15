@@ -1,0 +1,139 @@
+{
+  "header": {
+    "login": "Anmelden",
+    "register": "Registrieren"
+  },
+  "hero": {
+    "title": "Verwandeln Sie lange Links in kurze und leistungsstarke",
+    "subtitle": "Erstellen Sie Kurzlinks, verfolgen Sie Klickstatistiken und generieren Sie QR-Codes in Sekunden",
+    "input_placeholder": "Fügen Sie Ihren langen Link hier ein...",
+    "button": "Verkürzen",
+    "hint": "Kostenlos, keine Registrierung • Erstellen Sie ein Konto für erweiterte Analysen"
+  },
+  "result": {
+    "label": "Ihr Kurzlink:",
+    "copy": "Kopieren",
+    "copied": "✓ Kopiert",
+    "qr_label": "QR-Code:"
+  },
+  "stats": {
+    "links_created": "Links erstellt",
+    "active_users": "Aktive Benutzer",
+    "uptime": "Betriebszeit",
+    "monthly_clicks": "Monatliche Klicks"
+  },
+  "how_it_works": {
+    "title": "Wie funktioniert es?",
+    "subtitle": "Drei einfache Schritte zu Ihrem ersten Kurzlink",
+    "step1_title": "Link einfügen",
+    "step1_desc": "Kopieren Sie Ihren langen Link und fügen Sie ihn in das Feld oben ein",
+    "step2_title": "Kurzlink erhalten",
+    "step2_desc": "Erhalten Sie sofort einen verkürzten Link und QR-Code",
+    "step3_title": "Klicks verfolgen",
+    "step3_desc": "Analysieren Sie Klickstatistiken in Ihrem persönlichen Dashboard"
+  },
+  "features": {
+    "title": "Warum CutTo wählen?",
+    "feature1_title": "Sofortige Verkürzung",
+    "feature1_desc": "Erstellen Sie kurze und einprägsame Links in Sekunden",
+    "feature2_title": "Detaillierte Analysen",
+    "feature2_desc": "Verfolgen Sie Klicks, Geografie und Traffic-Quellen",
+    "feature3_title": "QR-Codes",
+    "feature3_desc": "Automatische QR-Code-Generierung für Druckmaterialien",
+    "feature4_title": "Sicherheit",
+    "feature4_desc": "Ihre Daten sind geschützt und immer unter Ihrer Kontrolle",
+    "feature5_title": "Hohe Geschwindigkeit",
+    "feature5_desc": "Blitzschnelle Verarbeitung und Weiterleitung ohne Verzögerungen",
+    "feature6_title": "Für Unternehmen",
+    "feature6_desc": "Perfekt für Marketing und Link-Management"
+  },
+  "cta": {
+    "title": "Bereit zu starten?",
+    "subtitle": "Erstellen Sie ein kostenloses Konto und erhalten Sie Zugang zu erweiterten Analysen",
+    "button": "Kostenloses Konto erstellen"
+  },
+  "footer": {
+    "tagline": "Professionelle Link-Verkürzung mit Analysen",
+    "copyright": "© 2025 CutTo. Alle Rechte vorbehalten."
+  },
+  "auth": {
+    "login_title": "Anmelden",
+    "register_title": "Registrieren",
+    "email_label": "E-Mail:",
+    "email_placeholder": "ihre@email.com",
+    "password_label": "Passwort:",
+    "password_placeholder": "Mindestens 8 Zeichen, Buchstaben und Zahlen",
+    "password_confirm_label": "Passwort bestätigen:",
+    "password_confirm_placeholder": "Passwort wiederholen",
+    "login_button": "Anmelden",
+    "register_button": "Registrieren",
+    "switch_to_register": "Noch kein Konto? Registrieren",
+    "switch_to_login": "Bereits ein Konto? Anmelden",
+    "forgot_password": "Passwort vergessen?",
+    "error_empty": "Bitte alle Felder ausfüllen",
+    "error_email": "Bitte gültige E-Mail eingeben",
+    "error_password_short": "Passwort muss mindestens 8 Zeichen haben",
+    "error_password_format": "Passwort muss Buchstaben und Zahlen enthalten",
+    "error_password_mismatch": "Passwörter stimmen nicht überein",
+    "success_registered": "✅ Registrierung erfolgreich!<br>Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.<br><small style='color: #999;'>Dieses Fenster schließt sich in 5 Sekunden</small>",
+    "success_login": "Anmeldung erfolgreich!"
+  },
+  "dashboard": {
+    "nav": {
+      "overview": "Übersicht",
+      "links": "Meine Links",
+      "profile": "Profil"
+    },
+    "title": {
+      "overview": "Übersicht",
+      "links": "Meine Links",
+      "profile": "Profil"
+    },
+    "logout": "Abmelden",
+    "stats": {
+      "total_links": "Gesamt Links",
+      "total_clicks": "Gesamt Klicks",
+      "avg_clicks": "Durchschn. Klicks pro Link",
+      "top_link": "Beliebtester Link",
+      "this_month": "diesen Monat",
+      "today": "heute",
+      "per_link": "Pro Link",
+      "no_links": "Noch keine Links",
+      "clicks": "Klicks"
+    },
+    "recent_links": "Letzte Links",
+    "all_links": "Alle Links",
+    "create_link": "+ Link erstellen",
+    "table": {
+      "short_link": "Kurzlink",
+      "original": "Original URL",
+      "clicks": "Klicks",
+      "created": "Erstellt",
+      "actions": "Aktionen"
+    },
+    "profile": {
+      "title": "Profilinformationen",
+      "email": "E-Mail",
+      "member_since": "Mitglied seit",
+      "change_password": "Passwort ändern",
+      "current_password": "Aktuelles Passwort",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Neues Passwort bestätigen",
+      "save": "Änderungen speichern"
+    },
+    "create_modal": {
+      "title": "Kurzlink erstellen",
+      "url_label": "URL eingeben:",
+      "url_placeholder": "https://example.com/sehr-langer-link",
+      "button": "Link erstellen",
+      "error_empty": "Bitte geben Sie eine URL ein",
+      "error_invalid": "Bitte geben Sie eine gültige URL ein",
+      "success": "Link erfolgreich erstellt!"
+    },
+    "empty": {
+      "title": "Noch keine Links",
+      "subtitle": "Erstellen Sie Ihren ersten Kurzlink, um zu beginnen",
+      "button": "+ Ersten Link erstellen"
+    }
+  }
+}

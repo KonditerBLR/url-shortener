@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CutTo</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body class="dashboard-page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">✨</span>
+                <span class="logo-text">CutTo</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="overview">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <span data-lang="dashboard.nav.overview">Overview</span>
+            </a>
+            <a href="#" class="nav-item" data-page="links">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                <span data-lang="dashboard.nav.links">My Links</span>
+            </a>
+            <a href="#" class="nav-item" data-page="profile">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span data-lang="dashboard.nav.profile">Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span data-lang="dashboard.logout">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Top Bar -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 id="pageTitle" data-lang="dashboard.title.overview">Overview</h1>
+            </div>
+            <div class="header-right">
+                <div class="lang-dropdown">
+                    <button class="lang-current" onclick="toggleLangMenu()">
+                        <span id="currentLangFlag">🇬🇧</span>
+                        <span id="currentLangCode">EN</span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                            <path d="M6 8l-4-4h8z" />
+                        </svg>
+                    </button>
+                    <div class="lang-menu" id="langMenu">
+                        <!-- Языки генерируются автоматически -->
+                    </div>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">User</div>
+                        <div class="user-email" id="userEmail">user@email.com</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="dashboard-content" id="dashboardContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Create Link Modal -->
+    <div class="modal" id="createLinkModal">
+        <div class="modal-overlay" onclick="closeCreateModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeCreateModal()">×</button>
+            <h2 id="createModalTitle" data-lang="dashboard.create_modal.title">Create Short Link</h2>
+
+            <div class="input-group">
+                <label for="createUrl" data-lang="dashboard.create_modal.url_label">Enter URL:</label>
+                <input type="text" id="createUrl" data-lang="dashboard.create_modal.url_placeholder"
+                    placeholder="https://example.com/very-long-url">
+            </div>
+
+            <div class="error" id="createError"></div>
+            <div class="success" id="createSuccess"></div>
+
+            <div id="createResult" style="display: none;">
+                <div class="result-box">
+                    <div class="result-content">
+                        <span class="result-label" data-lang="result.label">Your short link:</span>
+                        <div class="result-url">
+                            <input type="text" id="createdShortUrl" readonly>
+                            <button class="btn-copy" onclick="copyCreatedUrl()" data-lang="result.copy">Copy</button>
+                        </div>
+                        <div class="result-qr">
+                            <span class="result-label" data-lang="result.qr_label">QR Code:</span>
+                            <img id="createdQrCode" src="" alt="QR Code" class="qr-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary btn-full" id="createLinkBtn" onclick="createLink()"
+                data-lang="dashboard.create_modal.button">Create Link</button>
+        </div>
+    </div>
+
+    <script src="/js/lang.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,139 @@
+{
+  "header": {
+    "login": "Login",
+    "register": "Sign Up"
+  },
+  "hero": {
+    "title": "Turn Long Links into Short and Powerful Ones",
+    "subtitle": "Create short links, track click statistics, and generate QR codes in seconds",
+    "input_placeholder": "Paste your long link here...",
+    "button": "Shorten",
+    "hint": "Free, no registration • Create an account for advanced analytics"
+  },
+  "result": {
+    "label": "Your short link:",
+    "copy": "Copy",
+    "copied": "✓ Copied",
+    "qr_label": "QR Code:"
+  },
+  "stats": {
+    "links_created": "Links Created",
+    "active_users": "Active Users",
+    "uptime": "Uptime",
+    "monthly_clicks": "Monthly Clicks"
+  },
+  "how_it_works": {
+    "title": "How It Works?",
+    "subtitle": "Three simple steps to your first short link",
+    "step1_title": "Paste Your Link",
+    "step1_desc": "Copy your long link and paste it in the field above",
+    "step2_title": "Get Short Link",
+    "step2_desc": "Instantly receive a shortened link and QR code",
+    "step3_title": "Track Clicks",
+    "step3_desc": "Analyze click statistics in your personal dashboard"
+  },
+  "features": {
+    "title": "Why Choose CutTo?",
+    "feature1_title": "Instant Shortening",
+    "feature1_desc": "Create short and memorable links in seconds",
+    "feature2_title": "Detailed Analytics",
+    "feature2_desc": "Track clicks, geography, and traffic sources",
+    "feature3_title": "QR Codes",
+    "feature3_desc": "Automatic QR code generation for print materials",
+    "feature4_title": "Security",
+    "feature4_desc": "Your data is protected and always under your control",
+    "feature5_title": "High Speed",
+    "feature5_desc": "Lightning-fast processing and redirect without delays",
+    "feature6_title": "For Business",
+    "feature6_desc": "Perfect for marketing and link management"
+  },
+  "cta": {
+    "title": "Ready to Start?",
+    "subtitle": "Create a free account and get access to advanced analytics",
+    "button": "Create Free Account"
+  },
+  "footer": {
+    "tagline": "Professional link shortening with analytics",
+    "copyright": "© 2025 CutTo. All rights reserved."
+  },
+  "auth": {
+    "login_title": "Login",
+    "register_title": "Sign Up",
+    "email_label": "Email:",
+    "email_placeholder": "your@email.com",
+    "password_label": "Password:",
+    "password_placeholder": "Minimum 8 characters, letters and numbers",
+    "password_confirm_label": "Confirm Password:",
+    "password_confirm_placeholder": "Repeat password",
+    "login_button": "Login",
+    "register_button": "Sign Up",
+    "switch_to_register": "Don't have an account? Sign up",
+    "switch_to_login": "Already have an account? Login",
+    "forgot_password": "Forgot password?",
+    "error_empty": "Fill in all fields",
+    "error_email": "Enter a valid email",
+    "error_password_short": "Password must be at least 8 characters",
+    "error_password_format": "Password must contain letters and numbers",
+    "error_password_mismatch": "Passwords don't match",
+    "success_registered": "✅ Registration successful!<br>Check your email to verify your account.<br><small style='color: #999;'>This window will close in 5 seconds</small>",
+    "success_login": "Login successful!"
+  },
+  "dashboard": {
+    "nav": {
+      "overview": "Overview",
+      "links": "My Links",
+      "profile": "Profile"
+    },
+    "title": {
+      "overview": "Overview",
+      "links": "My Links",
+      "profile": "Profile"
+    },
+    "logout": "Logout",
+    "stats": {
+      "total_links": "Total Links",
+      "total_clicks": "Total Clicks",
+      "avg_clicks": "Avg. Clicks per Link",
+      "top_link": "Top Link",
+      "this_month": "this month",
+      "today": "today",
+      "per_link": "Per link",
+      "no_links": "No links yet",
+      "clicks": "clicks"
+    },
+    "recent_links": "Recent Links",
+    "all_links": "All Links",
+    "create_link": "+ Create Link",
+    "table": {
+      "short_link": "Short Link",
+      "original": "Original URL",
+      "clicks": "Clicks",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "email": "Email",
+      "member_since": "Member Since",
+      "change_password": "Change Password",
+      "current_password": "Current Password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "save": "Save Changes"
+    },
+    "create_modal": {
+      "title": "Create Short Link",
+      "url_label": "Enter URL:",
+      "url_placeholder": "https://example.com/very-long-url",
+      "button": "Create Link",
+      "error_empty": "Please enter a URL",
+      "error_invalid": "Please enter a valid URL",
+      "success": "Link created successfully!"
+    },
+    "empty": {
+      "title": "No links yet",
+      "subtitle": "Create your first short link to get started",
+      "button": "+ Create Your First Link"
+    }
+  }
+}

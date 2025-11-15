@@ -1,0 +1,20 @@
+{
+    "default": "en",
+    "languages": [
+        {
+            "code": "en",
+            "name": "English",
+            "flag": "🇬🇧"
+        },
+        {
+            "code": "ru",
+            "name": "Русский",
+            "flag": "🇷🇺"
+        },
+        {
+            "code": "de",
+            "name": "Deutsch",
+            "flag": "🇩🇪"
+        }
+    ]
+}
