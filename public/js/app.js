@@ -53,7 +53,7 @@ async function heroShorten() {
     const btn = event.target;
 
     if (!url) {
-        alert('Пожалуйста, введите URL');
+        toast.warning('Пожалуйста, введите URL');
         return;
     }
 
@@ -79,10 +79,10 @@ async function heroShorten() {
             // Плавная прокрутка к результату
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            alert(data.error || 'Ошибка');
+            toast.error(data.error || 'Ошибка');
         }
     } catch (error) {
-        alert('Ошибка соединения');
+        toast.error('Ошибка соединения');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Сократить';

@@ -207,11 +207,9 @@ async function loadOverviewData() {
     // Обновляем блок 4: Топ ссылка
     const statChange4 = document.getElementById('statChange4');
     if (statChange4 && topLink && topLink.short_code) {
-        console.log('Top link found:', topLink.short_code, 'clicks:', topLink.clicks);
         statChange4.textContent = topLink.short_code;
         statChange4.removeAttribute('data-lang'); // ВАЖНО: убираем перевод!
     } else {
-        console.log('No top link, topLink:', topLink);
         if (statChange4) {
             const noLinksText = currentLang === 'ru' ? 'Пока нет ссылок' :
                 currentLang === 'de' ? 'Noch keine Links' : 'No links yet';
@@ -745,19 +743,65 @@ async function deleteLink(id) {
         });
 
         if (response.ok) {
-            alert('Link deleted successfully!');
+            toast.success('Link deleted successfully!');
             showOverview();
         } else {
-            alert('Error deleting link');
+            toast.error('Error deleting link');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error deleting link');
+        toast.error('Error deleting link');
     }
 }
 
-function changePassword() {
-    alert('Change password - will implement next!');
+async function changePassword() {
+    const current = document.getElementById('currentPassword')?.value;
+    const newPass = document.getElementById('newPassword')?.value;
+    const confirm = document.getElementById('confirmPassword')?.value;
+
+    if (!current || !newPass || !confirm) {
+        toast.warning('Please fill in all fields');
+        return;
+    }
+
+    if (newPass.length < 8) {
+        toast.error('Password must be at least 8 characters');
+        return;
+    }
+
+    if (newPass !== confirm) {
+        toast.error('Passwords do not match');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/user/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                currentPassword: current,
+                newPassword: newPass
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            toast.success('Password changed successfully!');
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            toast.error(data.error || 'Error changing password');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        toast.error('Error changing password');
+    }
 }
 
 function logout() {
