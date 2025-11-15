@@ -38,7 +38,7 @@ async function heroShorten() {
     const btn = event.target;
 
     if (!url) {
-        alert('Пожалуйста, введите URL');
+        toast.error(typeof t === 'function' ? t('hero.error_empty') : 'Please enter a URL');
         return;
     }
 
@@ -64,10 +64,10 @@ async function heroShorten() {
             // Плавная прокрутка к результату
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            alert(data.error || 'Ошибка');
+            toast.error(data.error || 'Error');
         }
     } catch (error) {
-        alert('Ошибка соединения');
+        toast.error('Connection error');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Сократить';

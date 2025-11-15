@@ -210,11 +210,6 @@ async function loadOverviewData() {
     // Обновляем блок 4: Топ ссылка
     const statChange4 = document.getElementById('statChange4');
     if (statChange4 && topLink && topLink.short_code) {
-        console.log('Top link found:', topLink.short_code, 'clicks:', topLink.clicks);
-        statChange4.textContent = topLink.short_code;
-        statChange4.removeAttribute('data-lang'); // ВАЖНО: убираем перевод!
-    } else {
-        console.log('No top link, topLink:', topLink);
         if (statChange4) {
             const noLinksText = currentLang === 'ru' ? 'Пока нет ссылок' :
                 currentLang === 'de' ? 'Noch keine Links' : 'No links yet';
@@ -855,14 +850,14 @@ async function deleteLink(id) {
         });
 
         if (response.ok) {
-            alert('Link deleted successfully!');
+            toast.success('Link deleted successfully!');
             showOverview();
         } else {
-            alert('Error deleting link');
+            toast.error('Error deleting link');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error deleting link');
+        toast.error('Error deleting link');
     }
 }
 
@@ -873,12 +868,12 @@ async function changePassword() {
 
     // Валидация
     if (!currentPassword || !newPassword || !confirmPassword) {
-        alert(typeof t === 'function' ? t('auth.error_empty') : 'Fill in all fields');
+        toast.error(typeof t === 'function' ? t('auth.error_empty') : 'Fill in all fields');
         return;
     }
 
     if (newPassword.length < 8) {
-        alert(typeof t === 'function' ? t('auth.error_password_short') : 'Password must be at least 8 characters');
+        toast.error(typeof t === 'function' ? t('auth.error_password_short') : 'Password must be at least 8 characters');
         return;
     }
 
@@ -889,7 +884,7 @@ async function changePassword() {
 
     const token = localStorage.getItem('token');
     if (!token) {
-        alert('Not authorized');
+        toast.error('Not authorized');
         return;
     }
 
@@ -906,17 +901,17 @@ async function changePassword() {
         const data = await response.json();
 
         if (response.ok) {
-            alert(data.message || 'Password changed successfully!');
+            toast.success(data.message || 'Password changed successfully!');
             // Очищаем поля
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         } else {
-            alert(data.error || 'Error changing password');
+            toast.error(data.error || 'Error changing password');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error changing password');
+        toast.error('Error changing password');
     }
 }
 
@@ -1045,6 +1040,6 @@ function exportStats(id, shortCode) {
     })
     .catch(error => {
         console.error('Error exporting stats:', error);
-        alert('Error exporting statistics');
+        toast.error('Error exporting statistics');
     });
 }
