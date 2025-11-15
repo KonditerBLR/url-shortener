@@ -120,16 +120,30 @@ router.post('/shorten', optionalAuth, async (req, res) => {
   }
 });
 
-// Get user's URLs (для Dashboard)
+// Get user's URLs (для Dashboard) with tags
 router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
+    // Get all user URLs with their tags
     const result = await db.query(
-      'SELECT id, original_url, short_code, clicks, created_at FROM urls WHERE user_id = $1 ORDER BY created_at DESC',
+      `SELECT
+        u.id, u.original_url, u.short_code, u.clicks, u.created_at,
+        COALESCE(
+          json_agg(
+            json_build_object('id', t.id, 'name', t.name, 'color', t.color)
+          ) FILTER (WHERE t.id IS NOT NULL),
+          '[]'
+        ) as tags
+       FROM urls u
+       LEFT JOIN link_tags lt ON u.id = lt.url_id
+       LEFT JOIN tags t ON lt.tag_id = t.id
+       WHERE u.user_id = $1
+       GROUP BY u.id
+       ORDER BY u.created_at DESC`,
       [userId]
     );
-    
+
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching user URLs:', error);
@@ -370,6 +384,148 @@ router.get('/:shortCode', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ===== TAGS API =====
+
+// Get all user tags
+router.get('/tags', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await db.query(
+      'SELECT id, name, color, created_at FROM tags WHERE user_id = $1 ORDER BY name ASC',
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create a new tag
+router.post('/tags', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { name, color = '#6366f1' } = req.body;
+
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({ error: 'Tag name is required' });
+    }
+
+    if (name.length > 50) {
+      return res.status(400).json({ error: 'Tag name must be 50 characters or less' });
+    }
+
+    // Check if tag already exists
+    const existing = await db.query(
+      'SELECT id FROM tags WHERE user_id = $1 AND LOWER(name) = LOWER($2)',
+      [userId, name.trim()]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'Tag already exists' });
+    }
+
+    const result = await db.query(
+      'INSERT INTO tags (user_id, name, color) VALUES ($1, $2, $3) RETURNING id, name, color, created_at',
+      [userId, name.trim(), color]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete a tag
+router.delete('/tags/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+
+    const result = await db.query(
+      'DELETE FROM tags WHERE id = $1 AND user_id = $2 RETURNING *',
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Tag not found' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Add tag to link
+router.post('/urls/:urlId/tags/:tagId', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { urlId, tagId } = req.params;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT id FROM urls WHERE id = $1 AND user_id = $2',
+      [urlId, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    // Verify tag belongs to user
+    const tagCheck = await db.query(
+      'SELECT id FROM tags WHERE id = $1 AND user_id = $2',
+      [tagId, userId]
+    );
+
+    if (tagCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Tag not found' });
+    }
+
+    // Add tag to link (ignore if already exists)
+    await db.query(
+      'INSERT INTO link_tags (url_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [urlId, tagId]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error adding tag to link:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Remove tag from link
+router.delete('/urls/:urlId/tags/:tagId', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { urlId, tagId } = req.params;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT id FROM urls WHERE id = $1 AND user_id = $2',
+      [urlId, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    await db.query(
+      'DELETE FROM link_tags WHERE url_id = $1 AND tag_id = $2',
+      [urlId, tagId]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error removing tag from link:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
