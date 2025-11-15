@@ -2051,6 +2051,259 @@ function updateMobileMenu() {
     }
 }
 
+// ===== API KEYS MANAGEMENT =====
+
+async function showApiKeys() {
+    const content = document.getElementById('dashboardContent');
+
+    content.innerHTML = `
+        <div class="api-keys-section">
+            <div class="section-header">
+                <h2 class="section-title">API Keys</h2>
+                <p>Manage your API keys for programmatic access</p>
+                <button class="btn-primary" onclick="showCreateApiKeyModal()" style="margin-top: 20px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Create New API Key
+                </button>
+            </div>
+
+            <div class="api-keys-list" id="apiKeysList">
+                <p style="text-align: center; color: var(--text-gray); padding: 40px;">Loading...</p>
+            </div>
+
+            <div class="api-docs" style="margin-top: 40px; padding: 24px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 16px;">API Documentation</h3>
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h4 style="margin-bottom: 8px;">Create Short URL</h4>
+                    <code style="display: block; margin: 8px 0; padding: 12px; background: #fff; border-radius: 4px;">
+POST /api/shorten<br>
+Headers: { "X-API-Key": "your_api_key" }<br>
+Body: { "url": "https://example.com", "customCode": "optional", "password": "optional", "expiresInDays": 30 }
+                    </code>
+                </div>
+                <p style="color: var(--text-gray); font-size: 14px;">
+                    Use the <code>X-API-Key</code> header to authenticate your requests.
+                    API keys allow you to create short URLs programmatically.
+                </p>
+            </div>
+        </div>
+    `;
+
+    await loadApiKeys();
+}
+
+async function loadApiKeys() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/api-keys', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load API keys');
+        }
+
+        const apiKeys = await response.json();
+        renderApiKeys(apiKeys);
+    } catch (error) {
+        console.error('Error loading API keys:', error);
+        document.getElementById('apiKeysList').innerHTML = `
+            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
+                Failed to load API keys
+            </p>
+        `;
+    }
+}
+
+function renderApiKeys(apiKeys) {
+    const container = document.getElementById('apiKeysList');
+
+    if (apiKeys.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px; opacity: 0.3;">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+                <h3 style="color: var(--text-dark); margin-bottom: 8px;">No API Keys Yet</h3>
+                <p style="color: var(--text-gray); margin-bottom: 24px;">Create your first API key to start using the API</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="api-keys-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Key Prefix</th>
+                    <th>Created</th>
+                    <th>Last Used</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${apiKeys.map(key => {
+                    const createdDate = new Date(key.created_at).toLocaleDateString();
+                    const lastUsed = key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : 'Never';
+                    const expires = key.expires_at ? new Date(key.expires_at).toLocaleDateString() : 'Never';
+                    const isExpired = key.expires_at && new Date(key.expires_at) < new Date();
+                    const statusClass = !key.is_active || isExpired ? 'inactive' : 'active';
+                    const statusText = !key.is_active ? 'Revoked' : isExpired ? 'Expired' : 'Active';
+
+                    return `
+                        <tr>
+                            <td><strong>${key.key_name}</strong></td>
+                            <td><code>${key.key_prefix}...</code></td>
+                            <td>${createdDate}</td>
+                            <td>${lastUsed}</td>
+                            <td>${expires}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                ${key.is_active && !isExpired ? `
+                                    <button class="btn-danger btn-sm" onclick="revokeApiKey(${key.id}, '${key.key_name}')">
+                                        Revoke
+                                    </button>
+                                ` : `<span style="color: var(--text-gray);">—</span>`}
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function showCreateApiKeyModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Create New API Key</h3>
+            <div class="form-group" style="margin: 20px 0;">
+                <label for="apiKeyName">API Key Name:</label>
+                <input type="text" id="apiKeyName" class="form-control" placeholder="e.g., Production Server" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 16px;">
+
+                <label for="apiKeyExpires">Expires In (days):</label>
+                <input type="number" id="apiKeyExpires" class="form-control" placeholder="Leave empty for no expiration" min="1" max="365" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+                <small style="color: var(--text-gray); display: block; margin-top: 5px;">Optional. Leave empty for API key that never expires.</small>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn-primary" onclick="createApiKey()">Create API Key</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    document.getElementById('apiKeyName').focus();
+}
+
+async function createApiKey() {
+    try {
+        const name = document.getElementById('apiKeyName').value.trim();
+        const expiresInDays = document.getElementById('apiKeyExpires').value;
+
+        if (!name) {
+            toast.error('Please enter an API key name');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/api-keys', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                name,
+                expiresInDays: expiresInDays ? parseInt(expiresInDays) : null
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.error || 'Failed to create API key');
+            return;
+        }
+
+        // Close the create modal
+        document.querySelector('.modal-overlay')?.remove();
+
+        // Show the API key in a new modal (only shown once!)
+        const keyModal = document.createElement('div');
+        keyModal.className = 'modal-overlay';
+        keyModal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <h3 style="color: #10b981;">✓ API Key Created Successfully!</h3>
+                <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                    <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this API key now. You won't be able to see it again!</p>
+                    <div style="background: white; padding: 16px; border-radius: 4px; font-family: monospace; word-break: break-all; font-size: 14px;">
+                        ${data.apiKey}
+                    </div>
+                    <button class="btn-secondary" onclick="navigator.clipboard.writeText('${data.apiKey}'); toast.success('API key copied to clipboard')" style="margin-top: 12px; width: 100%;">
+                        Copy to Clipboard
+                    </button>
+                </div>
+                <div style="padding: 16px; background: var(--card-bg); border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: var(--text-gray); font-size: 14px;">
+                        <strong>Name:</strong> ${data.key_name}<br>
+                        <strong>Prefix:</strong> <code>${data.key_prefix}...</code><br>
+                        <strong>Created:</strong> ${new Date(data.created_at).toLocaleString()}<br>
+                        ${data.expires_at ? `<strong>Expires:</strong> ${new Date(data.expires_at).toLocaleString()}` : '<strong>Expires:</strong> Never'}
+                    </p>
+                </div>
+                <button class="btn-primary" onclick="this.closest('.modal-overlay').remove(); loadApiKeys()" style="width: 100%;">
+                    I've Saved My API Key
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(keyModal);
+        toast.success('API key created successfully');
+    } catch (error) {
+        console.error('Error creating API key:', error);
+        toast.error('Failed to create API key');
+    }
+}
+
+async function revokeApiKey(keyId, keyName) {
+    if (!confirm(`Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/api-keys/${keyId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.error || 'Failed to revoke API key');
+            return;
+        }
+
+        toast.success('API key revoked successfully');
+        await loadApiKeys();
+    } catch (error) {
+        console.error('Error revoking API key:', error);
+        toast.error('Failed to revoke API key');
+    }
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -2088,6 +2341,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (page === 'profile') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.profile');
                 showProfile();
+            } else if (page === 'api-keys') {
+                document.getElementById('pageTitle').textContent = 'API Keys';
+                showApiKeys();
             }
 
             if (typeof updatePageLanguage === 'function') {

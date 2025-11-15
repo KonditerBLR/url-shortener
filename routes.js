@@ -6,6 +6,7 @@ const { authenticateToken } = require('./auth');
 const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 // Optional auth middleware
 const optionalAuth = (req, res, next) => {
@@ -979,6 +980,266 @@ router.put('/urls/:id/expiration', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating expiration:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ===== API KEY MANAGEMENT =====
+
+// Middleware to authenticate API key requests
+const authenticateApiKey = async (req, res, next) => {
+  try {
+    const apiKey = req.headers['x-api-key'];
+
+    if (!apiKey) {
+      return res.status(401).json({ error: 'API key required' });
+    }
+
+    // API keys are in format: sk_<random_string>
+    if (!apiKey.startsWith('sk_')) {
+      return res.status(401).json({ error: 'Invalid API key format' });
+    }
+
+    // Hash the API key for lookup
+    const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+
+    // Find and verify API key
+    const result = await db.query(
+      `SELECT ak.*, u.id as user_id, u.email
+       FROM api_keys ak
+       JOIN users u ON ak.user_id = u.id
+       WHERE ak.key_hash = $1 AND ak.is_active = TRUE`,
+      [keyHash]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or inactive API key' });
+    }
+
+    const apiKeyData = result.rows[0];
+
+    // Check expiration
+    if (apiKeyData.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(apiKeyData.expires_at);
+      if (now > expiresAt) {
+        return res.status(401).json({ error: 'API key has expired' });
+      }
+    }
+
+    // Update last used timestamp (async, don't wait)
+    db.query(
+      'UPDATE api_keys SET last_used_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [apiKeyData.id]
+    ).catch(err => console.error('Error updating API key last_used_at:', err));
+
+    // Attach user info to request
+    req.user = {
+      userId: apiKeyData.user_id,
+      email: apiKeyData.email
+    };
+
+    next();
+  } catch (error) {
+    console.error('Error authenticating API key:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Generate new API key
+router.post('/api-keys', authenticateToken, async (req, res) => {
+  try {
+    const { name, expiresInDays } = req.body;
+    const userId = req.user.userId;
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'API key name is required' });
+    }
+
+    // Check if user already has 10 or more active keys
+    const countResult = await db.query(
+      'SELECT COUNT(*) FROM api_keys WHERE user_id = $1 AND is_active = TRUE',
+      [userId]
+    );
+
+    if (parseInt(countResult.rows[0].count) >= 10) {
+      return res.status(400).json({ error: 'Maximum of 10 active API keys allowed' });
+    }
+
+    // Generate random API key
+    const randomBytes = crypto.randomBytes(32);
+    const apiKey = `sk_${randomBytes.toString('base64url')}`;
+    const keyPrefix = apiKey.substring(0, 10);
+
+    // Hash the API key for storage
+    const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+
+    // Calculate expiration date
+    let expiresAt = null;
+    if (expiresInDays && expiresInDays > 0) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    }
+
+    // Store API key
+    const result = await db.query(
+      `INSERT INTO api_keys (user_id, key_name, key_hash, key_prefix, expires_at)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, key_name, key_prefix, created_at, expires_at, is_active`,
+      [userId, name.trim(), keyHash, keyPrefix, expiresAt]
+    );
+
+    res.json({
+      apiKey: apiKey, // Only shown once!
+      ...result.rows[0],
+      message: 'Save this API key securely. It will not be shown again.'
+    });
+  } catch (error) {
+    console.error('Error creating API key:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// List user's API keys
+router.get('/api-keys', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await db.query(
+      `SELECT id, key_name, key_prefix, created_at, last_used_at, expires_at, is_active
+       FROM api_keys
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching API keys:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Revoke/delete API key
+router.delete('/api-keys/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify API key belongs to user
+    const checkResult = await db.query(
+      'SELECT id FROM api_keys WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'API key not found' });
+    }
+
+    // Delete API key
+    await db.query('DELETE FROM api_keys WHERE id = $1', [id]);
+
+    res.json({ success: true, message: 'API key revoked successfully' });
+  } catch (error) {
+    console.error('Error revoking API key:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API endpoint to create short URL using API key
+router.post('/shorten', authenticateApiKey, async (req, res) => {
+  try {
+    const { url, customCode, password, expiresInDays } = req.body;
+    const userId = req.user.userId;
+
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
+    // Validate URL
+    try {
+      new URL(url);
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid URL format' });
+    }
+
+    let shortCode;
+
+    // Check if custom code is provided
+    if (customCode) {
+      // Validate custom code (alphanumeric, 3-20 chars)
+      if (!/^[a-zA-Z0-9_-]{3,20}$/.test(customCode)) {
+        return res.status(400).json({
+          error: 'Custom code must be 3-20 characters (alphanumeric, dash, underscore)'
+        });
+      }
+
+      // Check if custom code is already taken
+      const existing = await db.query(
+        'SELECT id FROM urls WHERE short_code = $1',
+        [customCode]
+      );
+
+      if (existing.rows.length > 0) {
+        return res.status(409).json({ error: 'Custom code already taken' });
+      }
+
+      shortCode = customCode;
+    } else {
+      // Generate random short code
+      shortCode = generateShortCode();
+
+      // Ensure uniqueness
+      let attempts = 0;
+      while (attempts < 10) {
+        const existing = await db.query(
+          'SELECT id FROM urls WHERE short_code = $1',
+          [shortCode]
+        );
+
+        if (existing.rows.length === 0) break;
+
+        shortCode = generateShortCode();
+        attempts++;
+      }
+
+      if (attempts >= 10) {
+        return res.status(500).json({ error: 'Failed to generate unique code' });
+      }
+    }
+
+    // Handle password protection
+    let passwordHash = null;
+    if (password && password.trim() !== '') {
+      if (password.length < 4) {
+        return res.status(400).json({ error: 'Password must be at least 4 characters' });
+      }
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    // Handle expiration
+    let expiresAt = null;
+    if (expiresInDays && expiresInDays > 0) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    }
+
+    // Insert URL
+    const result = await db.query(
+      `INSERT INTO urls (original_url, short_code, user_id, password_hash, expires_at)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, original_url, short_code, created_at, expires_at, (password_hash IS NOT NULL) as has_password`,
+      [url, shortCode, userId, passwordHash, expiresAt]
+    );
+
+    const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
+
+    res.status(201).json({
+      ...result.rows[0],
+      short_url: shortUrl
+    });
+  } catch (error) {
+    console.error('Error creating short URL via API:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
