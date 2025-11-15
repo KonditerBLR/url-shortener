@@ -811,6 +811,34 @@ function createAnalyticsCharts(stats) {
     }
 }
 
+// ===== MOBILE SIDEBAR =====
+function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+}
+
+// Show mobile menu button on small screens
+function updateMobileMenu() {
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    if (window.innerWidth <= 480) {
+        menuBtn.style.display = 'flex';
+    } else {
+        menuBtn.style.display = 'none';
+        closeMobileSidebar();
+    }
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -853,8 +881,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof updatePageLanguage === 'function') {
                 updatePageLanguage();
             }
+
+            // Close mobile sidebar when navigating
+            closeMobileSidebar();
         });
     });
+
+    // Initialize mobile menu
+    updateMobileMenu();
+
+    // Update mobile menu on resize
+    window.addEventListener('resize', updateMobileMenu);
 });
 
 // Модалка создания ссылки

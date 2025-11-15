@@ -72,6 +72,13 @@
         <!-- Top Bar -->
         <header class="dashboard-header">
             <div class="header-left">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" style="display: none;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
                 <h1 id="pageTitle" data-lang="dashboard.title.overview">Overview</h1>
             </div>
             <div class="header-right">
@@ -208,6 +215,9 @@
                 data-lang="dashboard.create_modal.button">Create Link</button>
         </div>
     </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
     <script src="/js/toast.js"></script>
     <script src="/js/lang.js"></script>
