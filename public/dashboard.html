@@ -106,6 +106,23 @@
                     placeholder="https://example.com/very-long-url">
             </div>
 
+            <div class="input-group">
+                <label for="createTitle">Title (optional):</label>
+                <input type="text" id="createTitle" placeholder="My awesome link">
+            </div>
+
+            <div class="input-group">
+                <label for="createCustomCode">Custom code (optional):</label>
+                <input type="text" id="createCustomCode" placeholder="mylink" pattern="[a-zA-Z0-9-_]{3,50}">
+                <small>3-50 characters: letters, numbers, dash, underscore</small>
+            </div>
+
+            <div class="input-group">
+                <label for="createExpires">Expires in (days, optional):</label>
+                <input type="number" id="createExpires" placeholder="0" min="0" max="365">
+                <small>Leave 0 for no expiration</small>
+            </div>
+
             <div class="error" id="createError"></div>
             <div class="success" id="createSuccess"></div>
 
@@ -127,6 +144,36 @@
 
             <button class="btn-primary btn-full" id="createLinkBtn" onclick="createLink()"
                 data-lang="dashboard.create_modal.button">Create Link</button>
+        </div>
+    </div>
+
+    <!-- Edit Link Modal -->
+    <div class="modal" id="editLinkModal">
+        <div class="modal-overlay" onclick="closeEditModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditModal()">×</button>
+            <h2>Edit Link</h2>
+
+            <div class="input-group">
+                <label for="editUrl">Destination URL:</label>
+                <input type="text" id="editUrl" placeholder="https://example.com">
+            </div>
+
+            <div class="input-group">
+                <label for="editTitle">Title:</label>
+                <input type="text" id="editTitle" placeholder="My link">
+            </div>
+
+            <div class="input-group">
+                <label for="editExpires">Expires in (days):</label>
+                <input type="number" id="editExpires" placeholder="0" min="0" max="365">
+                <small>0 = no expiration</small>
+            </div>
+
+            <div class="error" id="editError"></div>
+            <div class="success" id="editSuccess"></div>
+
+            <button class="btn-primary btn-full" onclick="saveEdit()">Save Changes</button>
         </div>
     </div>
 

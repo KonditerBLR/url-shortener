@@ -125,10 +125,24 @@
       "title": "Kurzlink erstellen",
       "url_label": "URL eingeben:",
       "url_placeholder": "https://example.com/sehr-langer-link",
+      "title_label": "Titel (optional):",
+      "title_placeholder": "Mein wichtiger Link",
+      "custom_code_label": "Eigener Code (optional):",
+      "custom_code_placeholder": "mein-code",
+      "expires_label": "Läuft ab in (Tagen, optional):",
+      "expires_placeholder": "30",
       "button": "Link erstellen",
       "error_empty": "Bitte geben Sie eine URL ein",
       "error_invalid": "Bitte geben Sie eine gültige URL ein",
       "success": "Link erfolgreich erstellt!"
+    },
+    "edit_modal": {
+      "title": "Link bearbeiten",
+      "url_label": "URL:",
+      "title_label": "Titel:",
+      "expires_label": "Läuft ab in (Tagen):",
+      "button": "Änderungen speichern",
+      "success": "Link erfolgreich aktualisiert!"
     },
     "empty": {
       "title": "Noch keine Links",

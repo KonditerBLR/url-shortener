@@ -125,10 +125,24 @@
       "title": "Создать короткую ссылку",
       "url_label": "Введите URL:",
       "url_placeholder": "https://example.com/очень-длинная-ссылка",
+      "title_label": "Название (опционально):",
+      "title_placeholder": "Моя важная ссылка",
+      "custom_code_label": "Свой код (опционально):",
+      "custom_code_placeholder": "мой-код",
+      "expires_label": "Истекает через (дней, опционально):",
+      "expires_placeholder": "30",
       "button": "Создать ссылку",
       "error_empty": "Пожалуйста, введите URL",
       "error_invalid": "Пожалуйста, введите корректный URL",
       "success": "Ссылка успешно создана!"
+    },
+    "edit_modal": {
+      "title": "Редактировать ссылку",
+      "url_label": "URL:",
+      "title_label": "Название:",
+      "expires_label": "Истекает через (дней):",
+      "button": "Сохранить изменения",
+      "success": "Ссылка успешно обновлена!"
     },
     "empty": {
       "title": "Пока нет ссылок",

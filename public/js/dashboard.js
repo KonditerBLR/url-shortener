@@ -306,6 +306,19 @@ function renderLinksTable(links, containerId) {
                                 <button class="btn-action" onclick="showQR('${link.short_code}')" title="QR Code">
                                     <span style="font-size: 12px; font-weight: 700;">QR</span>
                                 </button>
+                                <button class="btn-action" onclick="showEditModal(${link.id})" title="Edit">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button class="btn-action" onclick="exportStats(${link.id}, '${link.short_code}')" title="Export CSV">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
                                 <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -433,6 +446,9 @@ function closeCreateModal() {
 
 async function createLink() {
     const url = document.getElementById('createUrl').value.trim();
+    const title = document.getElementById('createTitle').value.trim();
+    const customCode = document.getElementById('createCustomCode').value.trim();
+    const expiresInDays = document.getElementById('createExpires').value;
     const errorEl = document.getElementById('createError');
     const successEl = document.getElementById('createSuccess');
     const resultEl = document.getElementById('createResult');
@@ -465,13 +481,18 @@ async function createLink() {
 
     try {
         const token = localStorage.getItem('token');
+        const body = { url };
+        if (title) body.title = title;
+        if (customCode) body.customCode = customCode;
+        if (expiresInDays && parseInt(expiresInDays) > 0) body.expiresInDays = parseInt(expiresInDays);
+
         const response = await fetch('/api/shorten', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': token ? `Bearer ${token}` : ''
             },
-            body: JSON.stringify({ url })
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
@@ -495,6 +516,7 @@ async function createLink() {
 
             setTimeout(() => {
                 showOverview();
+                closeCreateModal();
             }, 3000);
         } else {
             errorEl.textContent = data.error || 'Error creating link';
@@ -583,4 +605,109 @@ function changePassword() {
 function logout() {
     localStorage.removeItem('token');
     window.location.href = '/';
-} а
+}
+
+// Edit link
+let editingLinkId = null;
+
+function showEditModal(id) {
+    editingLinkId = id;
+
+    // Найти ссылку
+    loadLinks().then(links => {
+        const link = links.find(l => l.id === id);
+        if (!link) return;
+
+        document.getElementById('editUrl').value = link.original_url;
+        document.getElementById('editTitle').value = link.title || '';
+        document.getElementById('editExpires').value = '';
+
+        document.getElementById('editLinkModal').classList.add('show');
+        document.getElementById('editError').classList.remove('show');
+        document.getElementById('editSuccess').classList.remove('show');
+    });
+}
+
+function closeEditModal() {
+    document.getElementById('editLinkModal').classList.remove('show');
+    editingLinkId = null;
+}
+
+async function saveEdit() {
+    if (!editingLinkId) return;
+
+    const original_url = document.getElementById('editUrl').value.trim();
+    const title = document.getElementById('editTitle').value.trim();
+    const expiresInDays = document.getElementById('editExpires').value;
+    const errorEl = document.getElementById('editError');
+    const successEl = document.getElementById('editSuccess');
+
+    errorEl.classList.remove('show');
+    successEl.classList.remove('show');
+
+    const body = {};
+    if (original_url) body.original_url = original_url;
+    if (title) body.title = title;
+    if (expiresInDays) body.expiresInDays = parseInt(expiresInDays);
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${editingLinkId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+            successEl.textContent = 'Link updated successfully!';
+            successEl.classList.add('show');
+            setTimeout(() => {
+                closeEditModal();
+                showOverview();
+            }, 1500);
+        } else {
+            const data = await response.json();
+            errorEl.textContent = data.error || 'Error updating link';
+            errorEl.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorEl.textContent = 'Network error';
+        errorEl.classList.add('show');
+    }
+}
+
+// Export statistics
+function exportStats(id, shortCode) {
+    const token = localStorage.getItem('token');
+    const url = `/api/urls/${id}/export`;
+
+    // Создаем скрытую ссылку для скачивания
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `link-${shortCode}-stats.csv`;
+    a.style.display = 'none';
+
+    // Добавляем токен в заголовки через fetch и создаем blob
+    fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        a.href = blobUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+    })
+    .catch(error => {
+        console.error('Error exporting stats:', error);
+        alert('Error exporting statistics');
+    });
+}

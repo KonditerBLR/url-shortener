@@ -125,10 +125,24 @@
       "title": "Create Short Link",
       "url_label": "Enter URL:",
       "url_placeholder": "https://example.com/very-long-url",
+      "title_label": "Title (optional):",
+      "title_placeholder": "My important link",
+      "custom_code_label": "Custom code (optional):",
+      "custom_code_placeholder": "my-custom-code",
+      "expires_label": "Expires in (days, optional):",
+      "expires_placeholder": "30",
       "button": "Create Link",
       "error_empty": "Please enter a URL",
       "error_invalid": "Please enter a valid URL",
       "success": "Link created successfully!"
+    },
+    "edit_modal": {
+      "title": "Edit Link",
+      "url_label": "URL:",
+      "title_label": "Title:",
+      "expires_label": "Expires in (days):",
+      "button": "Save Changes",
+      "success": "Link updated successfully!"
     },
     "empty": {
       "title": "No links yet",
