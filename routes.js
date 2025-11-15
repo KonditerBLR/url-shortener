@@ -61,10 +61,22 @@ router.get('/links', async (req, res) => {
   }
 });
 
-// Создать короткую ссылку
-router.post('/shorten', optionalAuth, async (req, res) => {
+// Unified middleware that checks for both JWT token and API key
+const unifiedAuth = async (req, res, next) => {
+  // Check for API key first
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey) {
+    return authenticateApiKey(req, res, next);
+  }
+
+  // Otherwise use optional JWT auth
+  return optionalAuth(req, res, next);
+};
+
+// Создать короткую ссылку (supports both JWT and API key auth)
+router.post('/shorten', unifiedAuth, async (req, res) => {
   try {
-    const { url, customCode } = req.body;
+    const { url, customCode, password, expiresInDays } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
@@ -101,9 +113,25 @@ router.post('/shorten', optionalAuth, async (req, res) => {
       }
     }
 
+    // Handle password protection (for API key users)
+    let passwordHash = null;
+    if (password && password.trim() !== '') {
+      if (password.length < 4) {
+        return res.status(400).json({ error: 'Password must be at least 4 characters' });
+      }
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    // Handle expiration (for API key users)
+    let expiresAt = null;
+    if (expiresInDays && expiresInDays > 0) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    }
+
     await db.query(
-      'INSERT INTO urls (original_url, short_code, user_id) VALUES ($1, $2, $3)',
-      [url, shortCode, userId]
+      'INSERT INTO urls (original_url, short_code, user_id, password_hash, expires_at) VALUES ($1, $2, $3, $4, $5)',
+      [url, shortCode, userId, passwordHash, expiresAt]
     );
 
     const shortUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/${shortCode}`;
@@ -114,7 +142,9 @@ router.post('/shorten', optionalAuth, async (req, res) => {
       fireWebhook(userId, 'link.created', {
         short_code: shortCode,
         original_url: url,
-        short_url: shortUrl
+        short_url: shortUrl,
+        has_password: !!passwordHash,
+        expires_at: expiresAt
       }).catch(err => console.error('Webhook error:', err));
     }
 
@@ -123,7 +153,9 @@ router.post('/shorten', optionalAuth, async (req, res) => {
       originalUrl: url,
       shortUrl,
       shortCode,
-      qrCode
+      qrCode,
+      has_password: !!passwordHash,
+      expires_at: expiresAt
     });
   } catch (error) {
     console.error(error);
@@ -1165,113 +1197,6 @@ router.delete('/api-keys/:id', authenticateToken, async (req, res) => {
     res.json({ success: true, message: 'API key revoked successfully' });
   } catch (error) {
     console.error('Error revoking API key:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// API endpoint to create short URL using API key
-router.post('/shorten', authenticateApiKey, async (req, res) => {
-  try {
-    const { url, customCode, password, expiresInDays } = req.body;
-    const userId = req.user.userId;
-
-    if (!url) {
-      return res.status(400).json({ error: 'URL is required' });
-    }
-
-    // Validate URL
-    try {
-      new URL(url);
-    } catch (err) {
-      return res.status(400).json({ error: 'Invalid URL format' });
-    }
-
-    let shortCode;
-
-    // Check if custom code is provided
-    if (customCode) {
-      // Validate custom code (alphanumeric, 3-20 chars)
-      if (!/^[a-zA-Z0-9_-]{3,20}$/.test(customCode)) {
-        return res.status(400).json({
-          error: 'Custom code must be 3-20 characters (alphanumeric, dash, underscore)'
-        });
-      }
-
-      // Check if custom code is already taken
-      const existing = await db.query(
-        'SELECT id FROM urls WHERE short_code = $1',
-        [customCode]
-      );
-
-      if (existing.rows.length > 0) {
-        return res.status(409).json({ error: 'Custom code already taken' });
-      }
-
-      shortCode = customCode;
-    } else {
-      // Generate random short code
-      shortCode = generateShortCode();
-
-      // Ensure uniqueness
-      let attempts = 0;
-      while (attempts < 10) {
-        const existing = await db.query(
-          'SELECT id FROM urls WHERE short_code = $1',
-          [shortCode]
-        );
-
-        if (existing.rows.length === 0) break;
-
-        shortCode = generateShortCode();
-        attempts++;
-      }
-
-      if (attempts >= 10) {
-        return res.status(500).json({ error: 'Failed to generate unique code' });
-      }
-    }
-
-    // Handle password protection
-    let passwordHash = null;
-    if (password && password.trim() !== '') {
-      if (password.length < 4) {
-        return res.status(400).json({ error: 'Password must be at least 4 characters' });
-      }
-      passwordHash = await bcrypt.hash(password, 10);
-    }
-
-    // Handle expiration
-    let expiresAt = null;
-    if (expiresInDays && expiresInDays > 0) {
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
-    }
-
-    // Insert URL
-    const result = await db.query(
-      `INSERT INTO urls (original_url, short_code, user_id, password_hash, expires_at)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, original_url, short_code, created_at, expires_at, (password_hash IS NOT NULL) as has_password`,
-      [url, shortCode, userId, passwordHash, expiresAt]
-    );
-
-    const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
-
-    // Fire webhook for link.created event (asynchronously)
-    fireWebhook(userId, 'link.created', {
-      short_code: shortCode,
-      original_url: url,
-      short_url: shortUrl,
-      has_password: !!passwordHash,
-      expires_at: expiresAt
-    }).catch(err => console.error('Webhook error:', err));
-
-    res.status(201).json({
-      ...result.rows[0],
-      short_url: shortUrl
-    });
-  } catch (error) {
-    console.error('Error creating short URL via API:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

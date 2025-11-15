@@ -118,8 +118,18 @@ EMAIL_FROM=your-email@gmail.com
 
 ### 5. Запуск миграций базы данных
 
-Выполните все миграции в правильном порядке:
+**РЕКОМЕНДУЕТСЯ:** Используйте автоматический скрипт миграций:
+```bash
+npm run migrate
+```
 
+Этот скрипт автоматически:
+- ✓ Проверяет какие миграции уже выполнены
+- ✓ Выполняет только новые миграции
+- ✓ Гарантирует правильный порядок выполнения
+- ✓ Использует транзакции для безопасности
+
+**Альтернативный способ (ручной):**
 ```bash
 # Основные таблицы
 psql -U url_user -d url_shortener -f migrations/init.sql
@@ -127,20 +137,12 @@ psql -U url_user -d url_shortener -f migrations/init.sql
 # Новые фичи (в порядке добавления)
 psql -U url_user -d url_shortener -f migrations/add_tags.sql
 psql -U url_user -d url_shortener -f migrations/add_starred.sql
-psql -U url_user -d url_shortener -f migrations/add_descriptions.sql
+psql -U url_user -d url_shortener -f migrations/add_description.sql
 psql -U url_user -d url_shortener -f migrations/add_archived.sql
 psql -U url_user -d url_shortener -f migrations/add_expiration.sql
 psql -U url_user -d url_shortener -f migrations/add_password_protection.sql
 psql -U url_user -d url_shortener -f migrations/add_api_keys.sql
 psql -U url_user -d url_shortener -f migrations/add_webhooks.sql
-```
-
-Или выполните все миграции одной командой:
-```bash
-for file in migrations/*.sql; do
-  echo "Running $file..."
-  psql -U url_user -d url_shortener -f "$file"
-done
 ```
 
 ## 🚀 Запуск проекта

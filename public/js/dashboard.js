@@ -1709,11 +1709,15 @@ async function showAnalytics() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (!response.ok) {
+            throw new Error(`Failed to load links: ${response.status}`);
+        }
+
         const links = await response.json();
 
         const linksListDiv = document.getElementById('analyticsLinksList');
 
-        if (links.length === 0) {
+        if (!Array.isArray(links) || links.length === 0) {
             linksListDiv.innerHTML = `
                 <div class="empty-state">
                     <p>No links yet. Create your first link to see analytics!</p>
