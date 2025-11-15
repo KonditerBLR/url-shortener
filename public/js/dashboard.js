@@ -1,5 +1,67 @@
 // ===== DASHBOARD LOGIC =====
 
+// ===== SKELETON LOADERS =====
+const SkeletonLoader = {
+    statsCards: () => `
+        <div class="stats-grid">
+            ${Array(4).fill(0).map(() => `
+                <div class="skeleton-stat-card">
+                    <div class="skeleton skeleton-stat-icon"></div>
+                    <div class="skeleton-stat-content">
+                        <div class="skeleton skeleton-stat-title"></div>
+                        <div class="skeleton skeleton-stat-value"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `,
+
+    linksTable: (rows = 5) => `
+        <div class="skeleton-table">
+            <div class="skeleton-table-header">
+                <div class="skeleton skeleton-table-header-cell" style="width: 120px;"></div>
+                <div class="skeleton skeleton-table-header-cell" style="flex: 2;"></div>
+                <div class="skeleton skeleton-table-header-cell" style="width: 80px;"></div>
+                <div class="skeleton skeleton-table-header-cell" style="width: 100px;"></div>
+                <div class="skeleton skeleton-table-header-cell" style="width: 100px;"></div>
+            </div>
+            ${Array(rows).fill(0).map(() => `
+                <div class="skeleton-table-row">
+                    <div class="skeleton skeleton-table-cell short"></div>
+                    <div class="skeleton skeleton-table-cell long"></div>
+                    <div class="skeleton skeleton-table-cell number"></div>
+                    <div class="skeleton skeleton-table-cell date"></div>
+                    <div class="skeleton skeleton-table-cell actions"></div>
+                </div>
+            `).join('')}
+        </div>
+    `,
+
+    chart: () => `
+        <div class="skeleton-chart">
+            <div class="skeleton skeleton-chart-title"></div>
+            <div class="skeleton skeleton-chart-body"></div>
+        </div>
+    `,
+
+    analyticsList: (items = 5) => `
+        <div class="skeleton-analytics-list">
+            ${Array(items).fill(0).map(() => `
+                <div class="skeleton-analytics-item">
+                    <div class="skeleton-analytics-item-info">
+                        <div class="skeleton skeleton-analytics-item-title"></div>
+                        <div class="skeleton skeleton-analytics-item-url"></div>
+                    </div>
+                    <div class="skeleton-analytics-item-meta">
+                        <div class="skeleton skeleton-analytics-item-clicks"></div>
+                        <div class="skeleton skeleton-analytics-item-date"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `
+};
+
 // Проверка авторизации
 function checkAuth() {
     const token = localStorage.getItem('token');
@@ -116,7 +178,9 @@ function showOverview() {
                 <h2 class="section-title" data-lang="dashboard.recent_links">Recent Links</h2>
                 <button class="btn-create" onclick="showCreateModal()" data-lang="dashboard.create_link">+ Create Link</button>
             </div>
-            <div id="recentLinksTable"></div>
+            <div id="recentLinksTable">
+                ${SkeletonLoader.linksTable(3)}
+            </div>
         </div>
     `;
 
@@ -262,7 +326,9 @@ async function showLinks() {
                 </div>
             </div>
 
-            <div id="allLinksTable"></div>
+            <div id="allLinksTable">
+                ${SkeletonLoader.linksTable(5)}
+            </div>
         </div>
     `;
 
@@ -455,7 +521,7 @@ async function showAnalytics() {
 
             <div class="analytics-content">
                 <div class="links-list" id="analyticsLinksList">
-                    <div class="loading">Loading links...</div>
+                    ${SkeletonLoader.analyticsList(5)}
                 </div>
 
                 <div class="analytics-details" id="analyticsDetails" style="display: none;">
@@ -552,7 +618,14 @@ async function viewLinkAnalytics(linkId, shortCode) {
 
     detailsDiv.style.display = 'block';
     document.getElementById('analyticsLinkTitle').textContent = `Statistics for: ${shortCode}`;
-    dataDiv.innerHTML = '<div class="loading">Loading statistics...</div>';
+    dataDiv.innerHTML = `
+        ${SkeletonLoader.statsCards()}
+        ${SkeletonLoader.chart()}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 24px;">
+            ${SkeletonLoader.chart()}
+            ${SkeletonLoader.chart()}
+        </div>
+    `;
 
     try {
         const response = await fetch(`/api/urls/${linkId}/stats`, {
