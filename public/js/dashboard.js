@@ -598,8 +598,58 @@ async function deleteLink(id) {
     }
 }
 
-function changePassword() {
-    alert('Change password - will implement next!');
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Валидация
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        alert(typeof t === 'function' ? t('auth.error_empty') : 'Fill in all fields');
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        alert(typeof t === 'function' ? t('auth.error_password_short') : 'Password must be at least 8 characters');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert(typeof t === 'function' ? t('auth.error_password_mismatch') : 'Passwords don\'t match');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Not authorized');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message || 'Password changed successfully!');
+            // Очищаем поля
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            alert(data.error || 'Error changing password');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error changing password');
+    }
 }
 
 function logout() {

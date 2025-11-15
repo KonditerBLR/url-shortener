@@ -231,4 +231,48 @@ router.get('/verify-email', async (req, res) => {
     }
 });
 
+// Смена пароля (для авторизованных пользователей)
+router.post('/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.userId;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required' });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: 'New password must be at least 8 characters' });
+        }
+
+        // Получаем пользователя
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = result.rows[0];
+
+        // Проверяем текущий пароль
+        const isValid = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isValid) {
+            return res.status(400).json({ error: 'Current password is incorrect' });
+        }
+
+        // Хешируем новый пароль
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+        // Обновляем пароль
+        await db.query(
+            'UPDATE users SET password_hash = $1 WHERE id = $2',
+            [newPasswordHash, userId]
+        );
+
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = { router, authenticateToken };
