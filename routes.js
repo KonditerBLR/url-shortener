@@ -524,4 +524,197 @@ router.get('/:shortCode', async (req, res) => {
   }
 });
 
+// Получить общую аналитику по кликам (график по дням)
+router.get('/stats/analytics/clicks-timeline', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const days = parseInt(req.query.days) || 30; // По умолчанию последние 30 дней
+
+    // Получаем все ссылки пользователя
+    const userUrls = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+    const urlIds = userUrls.rows.map(row => row.id);
+
+    if (urlIds.length === 0) {
+      return res.json({ timeline: [] });
+    }
+
+    // Клики по дням
+    const timeline = await db.query(
+      `SELECT
+        DATE(clicked_at) as date,
+        COUNT(*) as clicks
+       FROM clicks
+       WHERE url_id = ANY($1) AND clicked_at > NOW() - INTERVAL '${days} days'
+       GROUP BY DATE(clicked_at)
+       ORDER BY date ASC`,
+      [urlIds]
+    );
+
+    res.json({ timeline: timeline.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Получить статистику устройств
+router.get('/stats/analytics/devices', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userUrls = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+    const urlIds = userUrls.rows.map(row => row.id);
+
+    if (urlIds.length === 0) {
+      return res.json({ devices: [] });
+    }
+
+    const devices = await db.query(
+      `SELECT device_type, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1)
+       GROUP BY device_type
+       ORDER BY count DESC`,
+      [urlIds]
+    );
+
+    res.json({ devices: devices.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Получить статистику браузеров и ОС
+router.get('/stats/analytics/platforms', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userUrls = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+    const urlIds = userUrls.rows.map(row => row.id);
+
+    if (urlIds.length === 0) {
+      return res.json({ browsers: [], os: [] });
+    }
+
+    const browsers = await db.query(
+      `SELECT browser, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1)
+       GROUP BY browser
+       ORDER BY count DESC
+       LIMIT 10`,
+      [urlIds]
+    );
+
+    const os = await db.query(
+      `SELECT os, COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1)
+       GROUP BY os
+       ORDER BY count DESC
+       LIMIT 10`,
+      [urlIds]
+    );
+
+    res.json({ browsers: browsers.rows, os: os.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Получить статистику реферальных источников
+router.get('/stats/analytics/referrers', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userUrls = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+    const urlIds = userUrls.rows.map(row => row.id);
+
+    if (urlIds.length === 0) {
+      return res.json({ referrers: [] });
+    }
+
+    const referrers = await db.query(
+      `SELECT
+        CASE
+          WHEN referrer IS NULL OR referrer = '' THEN 'Direct'
+          ELSE referrer
+        END as source,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1)
+       GROUP BY source
+       ORDER BY count DESC
+       LIMIT 10`,
+      [urlIds]
+    );
+
+    res.json({ referrers: referrers.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Получить географию кликов
+router.get('/stats/analytics/geo', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userUrls = await db.query(
+      'SELECT id FROM urls WHERE user_id = $1',
+      [userId]
+    );
+    const urlIds = userUrls.rows.map(row => row.id);
+
+    if (urlIds.length === 0) {
+      return res.json({ countries: [], cities: [] });
+    }
+
+    const countries = await db.query(
+      `SELECT
+        COALESCE(country, 'Unknown') as country,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1)
+       GROUP BY country
+       ORDER BY count DESC
+       LIMIT 10`,
+      [urlIds]
+    );
+
+    const cities = await db.query(
+      `SELECT
+        COALESCE(city, 'Unknown') as city,
+        COALESCE(country, 'Unknown') as country,
+        COUNT(*) as count
+       FROM clicks
+       WHERE url_id = ANY($1) AND city IS NOT NULL
+       GROUP BY city, country
+       ORDER BY count DESC
+       LIMIT 10`,
+      [urlIds]
+    );
+
+    res.json({ countries: countries.rows, cities: cities.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

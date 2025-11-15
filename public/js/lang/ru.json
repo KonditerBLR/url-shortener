@@ -81,11 +81,13 @@
   "dashboard": {
     "nav": {
       "overview": "Обзор",
+      "analytics": "Аналитика",
       "links": "Мои ссылки",
       "profile": "Профиль"
     },
     "title": {
       "overview": "Обзор",
+      "analytics": "Аналитика",
       "links": "Мои ссылки",
       "profile": "Профиль"
     },

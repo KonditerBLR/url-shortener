@@ -81,11 +81,13 @@
   "dashboard": {
     "nav": {
       "overview": "Overview",
+      "analytics": "Analytics",
       "links": "My Links",
       "profile": "Profile"
     },
     "title": {
       "overview": "Overview",
+      "analytics": "Analytics",
       "links": "My Links",
       "profile": "Profile"
     },
