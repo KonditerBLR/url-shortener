@@ -156,8 +156,8 @@
       "subtitle": "Create your first short link to get started",
       "button": "+ Create Your First Link"
     }
-    },
-    "analytics": {
+  },
+  "analytics": {
       "clicks_timeline": "Clicks Over Time",
       "devices": "Devices",
       "browsers": "Browsers",

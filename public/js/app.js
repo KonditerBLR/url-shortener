@@ -326,3 +326,18 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.stat-number, .feature-card, .step-card').forEach(el => {
     observer.observe(el);
 });
+
+// ===== DARK THEME TOGGLE =====
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+// Загружаем сохранённую тему при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+});

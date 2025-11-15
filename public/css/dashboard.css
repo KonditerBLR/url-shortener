@@ -168,12 +168,14 @@
 }
 
 .stat-card {
-    background: var(--bg-white);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
+                0 2px 8px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: hidden;
 }
@@ -185,19 +187,81 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background: linear-gradient(90deg, #667eea, #764ba2, #f765a3);
     opacity: 0;
     transition: opacity 0.3s;
 }
 
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
 .stat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15),
+                0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 .stat-card:hover::before {
     opacity: 1;
+}
+
+.stat-card:hover::after {
+    opacity: 1;
+}
+
+/* Варианты цветов для разных карточек */
+.stat-card:nth-child(1) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-card:nth-child(1) .stat-card-title,
+.stat-card:nth-child(1) .stat-card-value,
+.stat-card:nth-child(1) .stat-card-change {
+    color: white !important;
+}
+
+.stat-card:nth-child(2) {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.stat-card:nth-child(2) .stat-card-title,
+.stat-card:nth-child(2) .stat-card-value,
+.stat-card:nth-child(2) .stat-card-change {
+    color: white !important;
+}
+
+.stat-card:nth-child(3) {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.stat-card:nth-child(3) .stat-card-title,
+.stat-card:nth-child(3) .stat-card-value,
+.stat-card:nth-child(3) .stat-card-change {
+    color: white !important;
+}
+
+.stat-card:nth-child(4) {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.stat-card:nth-child(4) .stat-card-title,
+.stat-card:nth-child(4) .stat-card-value,
+.stat-card:nth-child(4) .stat-card-change {
+    color: white !important;
 }
 
 .stat-card-header {
@@ -214,20 +278,24 @@
 }
 
 .stat-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(247, 101, 163, 0.1));
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary);
+    color: white;
+    font-size: 24px;
     transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card:hover .stat-card-icon {
-    transform: scale(1.1) rotate(5deg);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(247, 101, 163, 0.15));
+    transform: scale(1.15) rotate(-5deg);
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card-value {
@@ -545,12 +613,22 @@ body[data-theme="dark"] .btn-action[title]::after {
 /* ===== ANALYTICS PAGE ===== */
 .analytics-section {
     padding: 0;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .chart-card {
