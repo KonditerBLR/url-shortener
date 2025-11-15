@@ -129,20 +129,30 @@ npm run migrate
 - ✓ Гарантирует правильный порядок выполнения
 - ✓ Использует транзакции для безопасности
 
+**Проверка состояния базы данных:**
+```bash
+npm run check-db
+```
+
+Эта команда проверит:
+- ✓ Подключение к базе данных
+- ✓ Наличие всех необходимых таблиц
+- ✓ Структуру таблицы urls
+- ✓ Выполненные миграции
+- ✓ Количество данных
+
 **Альтернативный способ (ручной):**
 ```bash
-# Основные таблицы
-psql -U url_user -d url_shortener -f migrations/init.sql
-
-# Новые фичи (в порядке добавления)
-psql -U url_user -d url_shortener -f migrations/add_tags.sql
-psql -U url_user -d url_shortener -f migrations/add_starred.sql
-psql -U url_user -d url_shortener -f migrations/add_description.sql
-psql -U url_user -d url_shortener -f migrations/add_archived.sql
-psql -U url_user -d url_shortener -f migrations/add_expiration.sql
-psql -U url_user -d url_shortener -f migrations/add_password_protection.sql
-psql -U url_user -d url_shortener -f migrations/add_api_keys.sql
-psql -U url_user -d url_shortener -f migrations/add_webhooks.sql
+# Все миграции по порядку
+psql -U url_user -d url_shortener -f migrations/001_init.sql
+psql -U url_user -d url_shortener -f migrations/002_add_tags.sql
+psql -U url_user -d url_shortener -f migrations/003_add_starred.sql
+psql -U url_user -d url_shortener -f migrations/004_add_description.sql
+psql -U url_user -d url_shortener -f migrations/005_add_archived.sql
+psql -U url_user -d url_shortener -f migrations/006_add_expiration.sql
+psql -U url_user -d url_shortener -f migrations/007_add_password_protection.sql
+psql -U url_user -d url_shortener -f migrations/008_add_api_keys.sql
+psql -U url_user -d url_shortener -f migrations/009_add_webhooks.sql
 ```
 
 ## 🚀 Запуск проекта
