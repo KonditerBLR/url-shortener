@@ -589,6 +589,20 @@ router.get('/:shortCode', async (req, res) => {
       [url.id, ip, deviceType, os, browser, referrer, userAgent, isUnique]
     );
 
+    // Fire webhooks (asynchronously, don't block redirect)
+    if (url.user_id) {
+      fireWebhook(url.user_id, 'link.clicked', {
+        short_code: shortCode,
+        original_url: url.original_url,
+        clicks: url.clicks + 1,
+        device_type: deviceType,
+        os: os,
+        browser: browser,
+        referrer: referrer,
+        is_unique: isUnique
+      }).catch(err => console.error('Webhook error:', err));
+    }
+
     // Редиректим на оригинальный URL
     res.redirect(url.original_url);
   } catch (error) {
@@ -1244,4 +1258,246 @@ router.post('/shorten', authenticateApiKey, async (req, res) => {
   }
 });
 
+// ===== WEBHOOKS =====
+
+// Helper function to fire webhooks
+async function fireWebhook(userId, eventType, payload) {
+  try {
+    const webhooks = await db.query(
+      `SELECT * FROM webhooks
+       WHERE user_id = $1 AND is_active = TRUE AND $2 = ANY(events)`,
+      [userId, eventType]
+    );
+
+    for (const webhook of webhooks.rows) {
+      // Fire webhook asynchronously (don't wait)
+      sendWebhookRequest(webhook, eventType, payload).catch(err =>
+        console.error('Webhook delivery error:', err)
+      );
+    }
+  } catch (error) {
+    console.error('Error firing webhooks:', error);
+  }
+}
+
+async function sendWebhookRequest(webhook, eventType, payload) {
+  const webhookPayload = {
+    event: eventType,
+    timestamp: new Date().toISOString(),
+    data: payload
+  };
+
+  let signature = null;
+  if (webhook.secret_key) {
+    const hmac = crypto.createHmac('sha256', webhook.secret_key);
+    hmac.update(JSON.stringify(webhookPayload));
+    signature = hmac.digest('hex');
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch(webhook.endpoint_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'URLShortener-Webhook/1.0',
+        ...(signature && { 'X-Webhook-Signature': signature })
+      },
+      body: JSON.stringify(webhookPayload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    const responseBody = await response.text();
+
+    // Log webhook delivery
+    await db.query(
+      `INSERT INTO webhook_logs (webhook_id, event_type, payload, response_status, response_body, success)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        webhook.id,
+        eventType,
+        JSON.stringify(webhookPayload),
+        response.status,
+        responseBody.substring(0, 1000), // Limit response body size
+        response.ok
+      ]
+    );
+
+    // Update last_triggered_at
+    await db.query(
+      'UPDATE webhooks SET last_triggered_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [webhook.id]
+    );
+  } catch (error) {
+    // Log failed delivery
+    await db.query(
+      `INSERT INTO webhook_logs (webhook_id, event_type, payload, error_message, success)
+       VALUES ($1, $2, $3, $4, FALSE)`,
+      [webhook.id, eventType, JSON.stringify(webhookPayload), error.message]
+    );
+  }
+}
+
+// Create webhook
+router.post('/webhooks', authenticateToken, async (req, res) => {
+  try {
+    const { name, url, secret, events } = req.body;
+    const userId = req.user.userId;
+
+    if (!name || !url) {
+      return res.status(400).json({ error: 'Name and URL are required' });
+    }
+
+    // Validate URL
+    try {
+      new URL(url);
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid URL format' });
+    }
+
+    // Check webhook limit (max 5 per user)
+    const countResult = await db.query(
+      'SELECT COUNT(*) FROM webhooks WHERE user_id = $1',
+      [userId]
+    );
+
+    if (parseInt(countResult.rows[0].count) >= 5) {
+      return res.status(400).json({ error: 'Maximum of 5 webhooks allowed' });
+    }
+
+    // Validate events
+    const validEvents = ['link.clicked', 'link.created'];
+    const webhookEvents = events && events.length > 0 ? events : ['link.clicked'];
+
+    for (const event of webhookEvents) {
+      if (!validEvents.includes(event)) {
+        return res.status(400).json({
+          error: `Invalid event type: ${event}. Valid events: ${validEvents.join(', ')}`
+        });
+      }
+    }
+
+    // Generate secret key if not provided
+    const secretKey = secret || crypto.randomBytes(32).toString('hex');
+
+    const result = await db.query(
+      `INSERT INTO webhooks (user_id, webhook_name, endpoint_url, secret_key, events)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, webhook_name, endpoint_url, secret_key, events, is_active, created_at`,
+      [userId, name.trim(), url, secretKey, webhookEvents]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating webhook:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// List webhooks
+router.get('/webhooks', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await db.query(
+      `SELECT id, webhook_name, endpoint_url, events, is_active, last_triggered_at, created_at
+       FROM webhooks
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching webhooks:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete webhook
+router.delete('/webhooks/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const checkResult = await db.query(
+      'SELECT id FROM webhooks WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Webhook not found' });
+    }
+
+    await db.query('DELETE FROM webhooks WHERE id = $1', [id]);
+
+    res.json({ success: true, message: 'Webhook deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting webhook:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Toggle webhook active status
+router.patch('/webhooks/:id/toggle', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const result = await db.query(
+      `UPDATE webhooks
+       SET is_active = NOT is_active
+       WHERE id = $1 AND user_id = $2
+       RETURNING is_active`,
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Webhook not found' });
+    }
+
+    res.json({ is_active: result.rows[0].is_active });
+  } catch (error) {
+    console.error('Error toggling webhook:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get webhook logs
+router.get('/webhooks/:id/logs', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify webhook belongs to user
+    const webhookCheck = await db.query(
+      'SELECT id FROM webhooks WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (webhookCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Webhook not found' });
+    }
+
+    const result = await db.query(
+      `SELECT id, event_type, response_status, error_message, delivered_at, success
+       FROM webhook_logs
+       WHERE webhook_id = $1
+       ORDER BY delivered_at DESC
+       LIMIT 50`,
+      [id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching webhook logs:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
+module.exports.fireWebhook = fireWebhook;
