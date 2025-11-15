@@ -295,13 +295,134 @@ let allLinksData = [];
 let filteredLinksData = [];
 let currentSort = { field: 'created_at', order: 'desc' };
 
+// ===== TAGS MANAGEMENT =====
+let allTags = [];
+let selectedTagFilter = null;
+
+// Load all tags
+async function loadTags() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/tags', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            allTags = await response.json();
+            return allTags;
+        }
+    } catch (error) {
+        console.error('Error loading tags:', error);
+    }
+    return [];
+}
+
+// Create new tag
+async function createTag(name, color = '#6366f1') {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, color })
+        });
+
+        if (response.ok) {
+            const newTag = await response.json();
+            allTags.push(newTag);
+            toast.success('Tag created successfully');
+            return newTag;
+        } else {
+            const error = await response.json();
+            toast.error(error.error || 'Failed to create tag');
+        }
+    } catch (error) {
+        console.error('Error creating tag:', error);
+        toast.error('Failed to create tag');
+    }
+    return null;
+}
+
+// Delete tag
+async function deleteTag(tagId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/tags/${tagId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            allTags = allTags.filter(t => t.id !== tagId);
+            toast.success('Tag deleted successfully');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error deleting tag:', error);
+        toast.error('Failed to delete tag');
+    }
+    return false;
+}
+
+// Add tag to link
+async function addTagToLink(urlId, tagId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/tags/${tagId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            toast.success('Tag added to link');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error adding tag to link:', error);
+        toast.error('Failed to add tag');
+    }
+    return false;
+}
+
+// Remove tag from link
+async function removeTagFromLink(urlId, tagId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/tags/${tagId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            toast.success('Tag removed from link');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error removing tag from link:', error);
+        toast.error('Failed to remove tag');
+    }
+    return false;
+}
+
 async function showLinks() {
     const content = document.getElementById('dashboardContent');
     content.innerHTML = `
         <div class="links-section">
             <div class="section-header">
                 <h2 class="section-title" data-lang="dashboard.all_links">All Links</h2>
-                <button class="btn-create" onclick="showCreateModal()" data-lang="dashboard.create_link">+ Create Link</button>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="showTagsManager()" title="Manage Tags">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                            <line x1="7" y1="7" x2="7.01" y2="7"/>
+                        </svg>
+                        Manage Tags
+                    </button>
+                    <button class="btn-create" onclick="showCreateModal()" data-lang="dashboard.create_link">+ Create Link</button>
+                </div>
             </div>
 
             <div class="links-controls">
@@ -312,6 +433,7 @@ async function showLinks() {
                     </svg>
                     <input type="text" id="linkSearch" placeholder="Search links..." oninput="filterLinks()">
                 </div>
+                <div class="tags-filter" id="tagsFilter"></div>
                 <div class="sort-controls">
                     <select id="sortField" onchange="sortLinks()">
                         <option value="created_at">Sort by Date</option>
@@ -332,8 +454,13 @@ async function showLinks() {
         </div>
     `;
 
+    // Load tags and links
+    await loadTags();
     allLinksData = await loadLinks();
     filteredLinksData = [...allLinksData];
+
+    // Render tag filters
+    renderTagFilters();
 
     if (!allLinksData || allLinksData.length === 0) {
         document.getElementById('allLinksTable').innerHTML = `
