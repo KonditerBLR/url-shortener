@@ -693,6 +693,25 @@ function renderLinksTable(links, containerId) {
                             <div class="link-original" title="${link.original_url}">
                                 ${link.original_url}
                             </div>
+                            ${link.tags && link.tags.length > 0 ? `
+                                <div class="link-tags">
+                                    ${link.tags.map(tag => `
+                                        <span class="tag-badge" style="--tag-color: ${tag.color}">
+                                            ${tag.name}
+                                            <span class="tag-badge-remove" onclick="handleRemoveTagFromLink(${link.id}, ${tag.id}, event)">×</span>
+                                        </span>
+                                    `).join('')}
+                                    <button class="tag-badge" style="--tag-color: #cbd5e0" onclick="showAddTagMenu(${link.id}, event)" title="Add tag">
+                                        +
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="link-tags">
+                                    <button class="tag-badge" style="--tag-color: #cbd5e0" onclick="showAddTagMenu(${link.id}, event)" title="Add tag">
+                                        + Add tag
+                                    </button>
+                                </div>
+                            `}
                         </td>
                         <td>${link.clicks}</td>
                         <td>${new Date(link.created_at).toLocaleDateString()}</td>
@@ -723,6 +742,58 @@ function renderLinksTable(links, containerId) {
 
     if (typeof updatePageLanguage === 'function') {
         updatePageLanguage();
+    }
+}
+
+// ===== TAG MANAGEMENT IN TABLE =====
+
+// Remove tag from link in table
+async function handleRemoveTagFromLink(urlId, tagId, event) {
+    event.stopPropagation();
+    const success = await removeTagFromLink(urlId, tagId);
+    if (success) {
+        // Reload links to update display
+        await showLinks();
+    }
+}
+
+// Show add tag menu for link
+async function showAddTagMenu(urlId, event) {
+    event.stopPropagation();
+
+    if (allTags.length === 0) {
+        toast.info('No tags available. Create tags first!');
+        showTagsManager();
+        return;
+    }
+
+    // Get current link's tags
+    const link = allLinksData.find(l => l.id === urlId);
+    const currentTagIds = link && link.tags ? link.tags.map(t => t.id) : [];
+
+    // Filter available tags (not already assigned)
+    const availableTags = allTags.filter(t => !currentTagIds.includes(t.id));
+
+    if (availableTags.length === 0) {
+        toast.info('All tags are already assigned to this link');
+        return;
+    }
+
+    // Create simple selection prompt (можно улучшить до dropdown)
+    const tagNames = availableTags.map((t, i) => `${i + 1}. ${t.name}`).join('\n');
+    const selection = prompt(`Select tag to add:\n\n${tagNames}\n\nEnter number (1-${availableTags.length}):`);
+
+    if (selection) {
+        const index = parseInt(selection) - 1;
+        if (index >= 0 && index < availableTags.length) {
+            const selectedTag = availableTags[index];
+            const success = await addTagToLink(urlId, selectedTag.id);
+            if (success) {
+                await showLinks();
+            }
+        } else {
+            toast.error('Invalid selection');
+        }
     }
 }
 
