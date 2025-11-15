@@ -384,6 +384,142 @@ function toggleArchivedFilter() {
     filterLinks();
 }
 
+// ===== LINK EXPIRATION =====
+
+// Set or update link expiration
+async function setLinkExpiration(urlId) {
+    const link = allLinksData.find(l => l.id === urlId);
+    if (!link) return;
+
+    // Create modal for expiration settings
+    const currentExpiration = link.expires_at ? new Date(link.expires_at).toISOString().slice(0, 16) : '';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>Set Link Expiration</h3>
+            <div class="form-group" style="margin: 20px 0;">
+                <label for="expirationDate">Expiration Date & Time:</label>
+                <input type="datetime-local" id="expirationDate" class="form-control" value="${currentExpiration}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove expiration</small>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn-primary" onclick="saveExpiration(${urlId})">Save</button>
+                ${currentExpiration ? `<button class="btn-danger" onclick="removeExpiration(${urlId})">Remove</button>` : ''}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// Save expiration date
+async function saveExpiration(urlId) {
+    try {
+        const dateInput = document.getElementById('expirationDate');
+        const expirationDate = dateInput.value ? new Date(dateInput.value).toISOString() : null;
+
+        if (!expirationDate) {
+            toast.error('Please select a date and time');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/expiration`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ expires_at: expirationDate })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.expires_at = data.expires_at;
+            }
+
+            filterLinks();
+            toast.success('Expiration date set successfully');
+            document.querySelector('.modal-overlay')?.remove();
+        } else {
+            toast.error(data.error || 'Failed to set expiration');
+        }
+    } catch (error) {
+        console.error('Error setting expiration:', error);
+        toast.error('Failed to set expiration');
+    }
+}
+
+// Remove expiration date
+async function removeExpiration(urlId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${urlId}/expiration`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ expires_at: null })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Update local data
+            const link = allLinksData.find(l => l.id === urlId);
+            if (link) {
+                link.expires_at = null;
+            }
+
+            filterLinks();
+            toast.success('Expiration removed');
+            document.querySelector('.modal-overlay')?.remove();
+        } else {
+            toast.error(data.error || 'Failed to remove expiration');
+        }
+    } catch (error) {
+        console.error('Error removing expiration:', error);
+        toast.error('Failed to remove expiration');
+    }
+}
+
+// Get expiration status text
+function getExpirationStatus(expiresAt) {
+    if (!expiresAt) return null;
+
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diff = expires - now;
+
+    if (diff < 0) {
+        return { text: 'Expired', class: 'expired', color: '#ef4444' };
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 7) {
+        return { text: `Expires in ${days} days`, class: 'expires-soon', color: '#10b981' };
+    } else if (days > 0) {
+        return { text: `Expires in ${days}d ${hours}h`, class: 'expires-soon', color: '#f59e0b' };
+    } else if (hours > 0) {
+        return { text: `Expires in ${hours}h`, class: 'expires-urgent', color: '#f97316' };
+    } else {
+        return { text: 'Expires soon', class: 'expires-urgent', color: '#ef4444' };
+    }
+}
+
 // ===== BULK ACTIONS FUNCTIONS =====
 
 // Toggle select all links
@@ -1240,6 +1376,18 @@ function renderLinksTable(links, containerId) {
                                     </div>
                                 `}
                             </div>
+                            ${(() => {
+                                const status = getExpirationStatus(link.expires_at);
+                                return status ? `
+                                    <div class="expiration-badge ${status.class}" style="margin-top: 8px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${status.color}" stroke-width="2" style="margin-right: 4px;">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <polyline points="12 6 12 12 16 14"/>
+                                        </svg>
+                                        <span style="color: ${status.color}; font-size: 12px; font-weight: 500;">${status.text}</span>
+                                    </div>
+                                ` : '';
+                            })()}
                         </td>
                         <td>${link.clicks}</td>
                         <td>${new Date(link.created_at).toLocaleDateString()}</td>
@@ -1266,6 +1414,12 @@ function renderLinksTable(links, containerId) {
                                         <polyline points="21 8 21 21 3 21 3 8"/>
                                         <rect x="1" y="3" width="22" height="5"/>
                                         <line x1="10" y1="12" x2="14" y2="12"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-action btn-expiration" onclick="setLinkExpiration(${link.id})" title="Set expiration date">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
                                     </svg>
                                 </button>
                                 <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">

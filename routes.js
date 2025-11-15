@@ -125,7 +125,7 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Get all user URLs with their tags, starred status, description and archived status
+    // Get all user URLs with their tags, starred status, description, archived and expiration
     const result = await db.query(
       `SELECT
         u.id, u.original_url, u.short_code, u.clicks, u.created_at,
@@ -133,6 +133,7 @@ router.get('/urls/user', authenticateToken, async (req, res) => {
         COALESCE(u.is_archived, FALSE) as is_archived,
         u.archived_at,
         u.description,
+        u.expires_at,
         COALESCE(
           json_agg(
             json_build_object('id', t.id, 'name', t.name, 'color', t.color)
@@ -352,6 +353,32 @@ router.get('/:shortCode', async (req, res) => {
     }
 
     const url = result.rows[0];
+
+    // Check if link is expired
+    if (url.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(url.expires_at);
+      if (now > expiresAt) {
+        return res.status(410).send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Link Expired</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              h1 { color: #ef4444; }
+              p { color: #666; }
+            </style>
+          </head>
+          <body>
+            <h1>⏰ Link Expired</h1>
+            <p>This short link has expired and is no longer available.</p>
+            <p>Expired on: ${expiresAt.toLocaleDateString()}</p>
+          </body>
+          </html>
+        `);
+      }
+    }
 
     // Увеличиваем общий счётчик кликов
     await db.query(
@@ -644,6 +671,52 @@ router.post('/urls/:id/archived', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error toggling archived:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ===== LINK EXPIRATION =====
+
+// Set or update link expiration
+router.put('/urls/:id/expiration', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { expires_at } = req.body;
+    const userId = req.user.userId;
+
+    // Verify url belongs to user
+    const urlCheck = await db.query(
+      'SELECT id FROM urls WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (urlCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    // Validate expiration date if provided
+    if (expires_at !== null && expires_at !== undefined) {
+      const expirationDate = new Date(expires_at);
+      if (isNaN(expirationDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid expiration date' });
+      }
+      // Check if date is in the future
+      if (expirationDate <= new Date()) {
+        return res.status(400).json({ error: 'Expiration date must be in the future' });
+      }
+    }
+
+    // Update expiration
+    const result = await db.query(
+      'UPDATE urls SET expires_at = $1 WHERE id = $2 RETURNING expires_at',
+      [expires_at || null, id]
+    );
+
+    res.json({
+      expires_at: result.rows[0].expires_at
+    });
+  } catch (error) {
+    console.error('Error updating expiration:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

@@ -515,6 +515,65 @@ body.dark-theme .btn-action.btn-archive:hover {
     color: #60a5fa;
 }
 
+/* ===== EXPIRATION BUTTON ===== */
+
+.btn-action.btn-expiration {
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+}
+
+.btn-action.btn-expiration:hover {
+    background: #fef3c7;
+    color: #f59e0b;
+    transform: scale(1.1);
+}
+
+/* Dark theme for expiration button */
+body.dark-theme .btn-action.btn-expiration:hover {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+/* ===== EXPIRATION BADGES ===== */
+
+.expiration-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+body.dark-theme .expiration-badge {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.expiration-badge.expired {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.expiration-badge.expires-urgent {
+    background: rgba(249, 115, 22, 0.1);
+}
+
+.expiration-badge.expires-soon {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+body.dark-theme .expiration-badge.expired {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+body.dark-theme .expiration-badge.expires-urgent {
+    background: rgba(249, 115, 22, 0.15);
+}
+
+body.dark-theme .expiration-badge.expires-soon {
+    background: rgba(245, 158, 11, 0.15);
+}
+
 .empty-state {
     padding: 80px 24px;
     text-align: center;
