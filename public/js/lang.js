@@ -75,6 +75,16 @@ function updatePageLanguage() {
         }
     });
 
+    // Update page title (browser tab)
+    const pageTitleEl = document.getElementById('pageTitle');
+    if (pageTitleEl) {
+        const titleKey = pageTitleEl.getAttribute('data-lang');
+        if (titleKey) {
+            const pageTitle = t(titleKey);
+            document.title = `${pageTitle} - CutTo`;
+        }
+    }
+
     // Auth Modal
     updateAuthModalLanguage();
 

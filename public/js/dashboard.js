@@ -146,28 +146,25 @@ async function loadOverviewData() {
         return;
     }
 
-    // Загружаем детальную статистику
+    // Загружаем агрегированную статистику одним запросом
     const token = localStorage.getItem('token');
     let totalClicksToday = 0;
     let totalClicksMonth = 0;
 
-    // Получаем статистику по каждой ссылке
-    for (const link of links) {
-        try {
-            const response = await fetch(`/api/urls/${link.id}/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const stats = await response.json();
-                totalClicksToday += parseInt(stats.total.clicks_today) || 0;
-                totalClicksMonth += parseInt(stats.total.clicks_month) || 0;
+    try {
+        const response = await fetch('/api/stats/summary', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-        } catch (error) {
-            console.error('Error loading stats for link:', link.id, error);
+        });
+
+        if (response.ok) {
+            const stats = await response.json();
+            totalClicksToday = stats.totalClicksToday || 0;
+            totalClicksMonth = stats.totalClicksMonth || 0;
         }
+    } catch (error) {
+        console.error('Error loading summary stats:', error);
     }
 
     // Базовая статистика
@@ -189,7 +186,13 @@ async function loadOverviewData() {
     document.getElementById('totalLinks').textContent = totalLinks;
     document.getElementById('totalClicks').textContent = totalClicks.toLocaleString();
     document.getElementById('avgClicks').textContent = avgClicks;
-    document.getElementById('topLinkClicks').textContent = topLink.clicks;
+
+    // Исправляем ошибку с топ-ссылкой
+    if (topLink) {
+        document.getElementById('topLinkClicks').textContent = topLink.clicks;
+    } else {
+        document.getElementById('topLinkClicks').textContent = 0;
+    }
 
     // Обновляем подписи с динамическими цифрами
     const monthText = currentLang === 'ru' ? 'в этом месяце' :
@@ -207,11 +210,6 @@ async function loadOverviewData() {
     // Обновляем блок 4: Топ ссылка
     const statChange4 = document.getElementById('statChange4');
     if (statChange4 && topLink && topLink.short_code) {
-        console.log('Top link found:', topLink.short_code, 'clicks:', topLink.clicks);
-        statChange4.textContent = topLink.short_code;
-        statChange4.removeAttribute('data-lang'); // ВАЖНО: убираем перевод!
-    } else {
-        console.log('No top link, topLink:', topLink);
         if (statChange4) {
             const noLinksText = currentLang === 'ru' ? 'Пока нет ссылок' :
                 currentLang === 'de' ? 'Noch keine Links' : 'No links yet';
@@ -303,6 +301,19 @@ function renderLinksTable(links, containerId) {
                                 <button class="btn-action" onclick="showQR('${link.short_code}')" title="QR Code">
                                     <span style="font-size: 12px; font-weight: 700;">QR</span>
                                 </button>
+                                <button class="btn-action" onclick="showEditModal(${link.id})" title="Edit">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button class="btn-action" onclick="exportStats(${link.id}, '${link.short_code}')" title="Export CSV">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
                                 <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -365,6 +376,271 @@ function showProfile() {
     }
 }
 
+// Отображение аналитики
+async function showAnalytics() {
+    const content = document.getElementById('dashboardContent');
+
+    content.innerHTML = `
+        <div class="analytics-section">
+            <div class="charts-grid">
+                <!-- Clicks Timeline Chart -->
+                <div class="chart-card">
+                    <h3>Clicks Over Time</h3>
+                    <canvas id="clicksChart"></canvas>
+                </div>
+
+                <!-- Devices Chart -->
+                <div class="chart-card">
+                    <h3>Devices</h3>
+                    <canvas id="devicesChart"></canvas>
+                </div>
+
+                <!-- Browsers Chart -->
+                <div class="chart-card">
+                    <h3>Browsers</h3>
+                    <canvas id="browsersChart"></canvas>
+                </div>
+
+                <!-- OS Chart -->
+                <div class="chart-card">
+                    <h3>Operating Systems</h3>
+                    <canvas id="osChart"></canvas>
+                </div>
+
+                <!-- Referrers Table -->
+                <div class="chart-card">
+                    <h3>Top Referrers</h3>
+                    <div id="referrersTable"></div>
+                </div>
+
+                <!-- Geography Table -->
+                <div class="chart-card">
+                    <h3>Top Countries</h3>
+                    <div id="geoTable"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    await loadAnalyticsData();
+}
+
+// Загрузка данных аналитики
+async function loadAnalyticsData() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        // Загружаем все данные параллельно
+        const [timeline, devices, platforms, referrers, geo] = await Promise.all([
+            fetch('/api/stats/analytics/clicks-timeline?days=30', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/devices', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/platforms', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/referrers', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()),
+            fetch('/api/stats/analytics/geo', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json())
+        ]);
+
+        // Рендерим графики
+        renderClicksChart(timeline.timeline || []);
+        renderDevicesChart(devices.devices || []);
+        renderBrowsersChart(platforms.browsers || []);
+        renderOSChart(platforms.os || []);
+        renderReferrersTable(referrers.referrers || []);
+        renderGeoTable(geo.countries || []);
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+    }
+}
+
+// График кликов по времени
+function renderClicksChart(data) {
+    const ctx = document.getElementById('clicksChart');
+    if (!ctx) return;
+
+    const chartData = {
+        labels: data.map(d => new Date(d.date).toLocaleDateString()),
+        datasets: [{
+            label: 'Clicks',
+            data: data.map(d => parseInt(d.clicks)),
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// График устройств
+function renderDevicesChart(data) {
+    const ctx = document.getElementById('devicesChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => d.device_type || 'Unknown'),
+            datasets: [{
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// График браузеров
+function renderBrowsersChart(data) {
+    const ctx = document.getElementById('browsersChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.browser || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// График ОС
+function renderOSChart(data) {
+    const ctx = document.getElementById('osChart');
+    if (!ctx || data.length === 0) {
+        if (ctx) ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.os || 'Unknown'),
+            datasets: [{
+                label: 'Clicks',
+                data: data.map(d => parseInt(d.count)),
+                backgroundColor: '#764ba2'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Таблица реферальных источников
+function renderReferrersTable(data) {
+    const container = document.getElementById('referrersTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Clicks</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.source}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Таблица географии
+function renderGeoTable(data) {
+    const container = document.getElementById('geoTable');
+    if (!container) return;
+
+    if (data.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-gray);">No data</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Country</th>
+                    <th>Clicks</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(d => `
+                    <tr>
+                        <td>${d.country}</td>
+                        <td>${d.count}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
 // Навигация
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -393,6 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (page === 'overview') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.overview');
                 showOverview();
+            } else if (page === 'analytics') {
+                document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.analytics');
+                showAnalytics();
             } else if (page === 'links') {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.links');
                 showLinks();
@@ -430,6 +709,9 @@ function closeCreateModal() {
 
 async function createLink() {
     const url = document.getElementById('createUrl').value.trim();
+    const title = document.getElementById('createTitle').value.trim();
+    const customCode = document.getElementById('createCustomCode').value.trim();
+    const expiresInDays = document.getElementById('createExpires').value;
     const errorEl = document.getElementById('createError');
     const successEl = document.getElementById('createSuccess');
     const resultEl = document.getElementById('createResult');
@@ -462,13 +744,18 @@ async function createLink() {
 
     try {
         const token = localStorage.getItem('token');
+        const body = { url };
+        if (title) body.title = title;
+        if (customCode) body.customCode = customCode;
+        if (expiresInDays && parseInt(expiresInDays) > 0) body.expiresInDays = parseInt(expiresInDays);
+
         const response = await fetch('/api/shorten', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': token ? `Bearer ${token}` : ''
             },
-            body: JSON.stringify({ url })
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
@@ -492,6 +779,7 @@ async function createLink() {
 
             setTimeout(() => {
                 showOverview();
+                closeCreateModal();
             }, 3000);
         } else {
             errorEl.textContent = data.error || 'Error creating link';
@@ -562,22 +850,196 @@ async function deleteLink(id) {
         });
 
         if (response.ok) {
-            alert('Link deleted successfully!');
+            toast.success('Link deleted successfully!');
             showOverview();
         } else {
-            alert('Error deleting link');
+            toast.error('Error deleting link');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error deleting link');
+        toast.error('Error deleting link');
     }
 }
 
-function changePassword() {
-    alert('Change password - will implement next!');
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Валидация
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error(typeof t === 'function' ? t('auth.error_empty') : 'Fill in all fields');
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        toast.error(typeof t === 'function' ? t('auth.error_password_short') : 'Password must be at least 8 characters');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert(typeof t === 'function' ? t('auth.error_password_mismatch') : 'Passwords don\'t match');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        toast.error('Not authorized');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            toast.success(data.message || 'Password changed successfully!');
+            // Очищаем поля
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            toast.error(data.error || 'Error changing password');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        toast.error('Error changing password');
+    }
 }
 
 function logout() {
     localStorage.removeItem('token');
     window.location.href = '/';
-} а
+}
+
+// Тёмная тема
+function toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+// Загрузка сохранённой темы
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+}
+
+// Вызываем при загрузке страницы
+loadSavedTheme();
+
+// Edit link
+let editingLinkId = null;
+
+function showEditModal(id) {
+    editingLinkId = id;
+
+    // Найти ссылку
+    loadLinks().then(links => {
+        const link = links.find(l => l.id === id);
+        if (!link) return;
+
+        document.getElementById('editUrl').value = link.original_url;
+        document.getElementById('editTitle').value = link.title || '';
+        document.getElementById('editExpires').value = '';
+
+        document.getElementById('editLinkModal').classList.add('show');
+        document.getElementById('editError').classList.remove('show');
+        document.getElementById('editSuccess').classList.remove('show');
+    });
+}
+
+function closeEditModal() {
+    document.getElementById('editLinkModal').classList.remove('show');
+    editingLinkId = null;
+}
+
+async function saveEdit() {
+    if (!editingLinkId) return;
+
+    const original_url = document.getElementById('editUrl').value.trim();
+    const title = document.getElementById('editTitle').value.trim();
+    const expiresInDays = document.getElementById('editExpires').value;
+    const errorEl = document.getElementById('editError');
+    const successEl = document.getElementById('editSuccess');
+
+    errorEl.classList.remove('show');
+    successEl.classList.remove('show');
+
+    const body = {};
+    if (original_url) body.original_url = original_url;
+    if (title) body.title = title;
+    if (expiresInDays) body.expiresInDays = parseInt(expiresInDays);
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/urls/${editingLinkId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+            successEl.textContent = 'Link updated successfully!';
+            successEl.classList.add('show');
+            setTimeout(() => {
+                closeEditModal();
+                showOverview();
+            }, 1500);
+        } else {
+            const data = await response.json();
+            errorEl.textContent = data.error || 'Error updating link';
+            errorEl.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorEl.textContent = 'Network error';
+        errorEl.classList.add('show');
+    }
+}
+
+// Export statistics
+function exportStats(id, shortCode) {
+    const token = localStorage.getItem('token');
+    const url = `/api/urls/${id}/export`;
+
+    // Создаем скрытую ссылку для скачивания
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `link-${shortCode}-stats.csv`;
+    a.style.display = 'none';
+
+    // Добавляем токен в заголовки через fetch и создаем blob
+    fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        a.href = blobUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+    })
+    .catch(error => {
+        console.error('Error exporting stats:', error);
+        toast.error('Error exporting statistics');
+    });
+}

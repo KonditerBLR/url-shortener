@@ -7,6 +7,7 @@
     <title>Dashboard - CutTo</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/toast.css">
 </head>
 
 <body class="dashboard-page">
@@ -28,6 +29,12 @@
                     <rect x="3" y="14" width="7" height="7" />
                 </svg>
                 <span data-lang="dashboard.nav.overview">Overview</span>
+            </a>
+            <a href="#" class="nav-item" data-page="analytics">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <span data-lang="dashboard.nav.analytics">Analytics</span>
             </a>
             <a href="#" class="nav-item" data-page="links">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -65,6 +72,22 @@
                 <h1 id="pageTitle" data-lang="dashboard.title.overview">Overview</h1>
             </div>
             <div class="header-right">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                    <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
                 <div class="lang-dropdown">
                     <button class="lang-current" onclick="toggleLangMenu()">
                         <span id="currentLangFlag">🇬🇧</span>
@@ -106,6 +129,23 @@
                     placeholder="https://example.com/very-long-url">
             </div>
 
+            <div class="input-group">
+                <label for="createTitle" data-lang="dashboard.create_modal.title_label">Title (optional):</label>
+                <input type="text" id="createTitle" data-lang="dashboard.create_modal.title_placeholder" placeholder="My awesome link">
+            </div>
+
+            <div class="input-group">
+                <label for="createCustomCode" data-lang="dashboard.create_modal.custom_code_label">Custom code (optional):</label>
+                <input type="text" id="createCustomCode" data-lang="dashboard.create_modal.custom_code_placeholder" placeholder="mylink" pattern="[a-zA-Z0-9-_]{3,50}">
+                <small data-lang="dashboard.create_modal.custom_code_hint">3-50 characters: letters, numbers, dash, underscore</small>
+            </div>
+
+            <div class="input-group">
+                <label for="createExpires" data-lang="dashboard.create_modal.expires_label">Expires in (days, optional):</label>
+                <input type="number" id="createExpires" data-lang="dashboard.create_modal.expires_placeholder" placeholder="0" min="0" max="365">
+                <small data-lang="dashboard.create_modal.expires_hint">Leave 0 for no expiration</small>
+            </div>
+
             <div class="error" id="createError"></div>
             <div class="success" id="createSuccess"></div>
 
@@ -130,6 +170,38 @@
         </div>
     </div>
 
+    <!-- Edit Link Modal -->
+    <div class="modal" id="editLinkModal">
+        <div class="modal-overlay" onclick="closeEditModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditModal()">×</button>
+            <h2 data-lang="dashboard.edit_modal.title">Edit Link</h2>
+
+            <div class="input-group">
+                <label for="editUrl" data-lang="dashboard.edit_modal.url_label">Destination URL:</label>
+                <input type="text" id="editUrl" placeholder="https://example.com">
+            </div>
+
+            <div class="input-group">
+                <label for="editTitle" data-lang="dashboard.edit_modal.title_label">Title:</label>
+                <input type="text" id="editTitle" data-lang="dashboard.edit_modal.title_placeholder" placeholder="My link">
+            </div>
+
+            <div class="input-group">
+                <label for="editExpires" data-lang="dashboard.edit_modal.expires_label">Expires in (days):</label>
+                <input type="number" id="editExpires" data-lang="dashboard.edit_modal.expires_placeholder" placeholder="0" min="0" max="365">
+                <small data-lang="dashboard.edit_modal.expires_hint">0 = no expiration</small>
+            </div>
+
+            <div class="error" id="editError"></div>
+            <div class="success" id="editSuccess"></div>
+
+            <button class="btn-primary btn-full" onclick="saveEdit()" data-lang="dashboard.edit_modal.button">Save Changes</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/toast.js"></script>
     <script src="/js/lang.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/dashboard.js"></script>
