@@ -788,9 +788,16 @@ document.addEventListener('DOMContentLoaded', () => {
 function showCreateModal() {
     document.getElementById('createLinkModal').classList.add('show');
     document.getElementById('createUrl').value = '';
+    document.getElementById('customCode').value = '';
+    document.getElementById('utmSource').value = '';
+    document.getElementById('utmMedium').value = '';
+    document.getElementById('utmCampaign').value = '';
+    document.getElementById('utmTerm').value = '';
+    document.getElementById('utmContent').value = '';
     document.getElementById('createError').classList.remove('show');
     document.getElementById('createSuccess').classList.remove('show');
     document.getElementById('createResult').style.display = 'none';
+    document.getElementById('utmBuilder').style.display = 'none';
 
     const btn = document.getElementById('createLinkBtn');
     btn.style.display = 'block';
@@ -804,8 +811,18 @@ function closeCreateModal() {
     document.getElementById('createLinkModal').classList.remove('show');
 }
 
+function toggleUTMBuilder() {
+    const builder = document.getElementById('utmBuilder');
+    const icon = document.getElementById('utmToggleIcon');
+    const isVisible = builder.style.display !== 'none';
+
+    builder.style.display = isVisible ? 'none' : 'block';
+    icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
 async function createLink() {
-    const url = document.getElementById('createUrl').value.trim();
+    let url = document.getElementById('createUrl').value.trim();
+    const customCode = document.getElementById('customCode').value.trim();
     const errorEl = document.getElementById('createError');
     const successEl = document.getElementById('createSuccess');
     const resultEl = document.getElementById('createResult');
@@ -816,35 +833,59 @@ async function createLink() {
     resultEl.style.display = 'none';
 
     if (!url) {
-        errorEl.textContent = currentLang === 'ru' ? 'Пожалуйста, введите URL' :
-            currentLang === 'de' ? 'Bitte geben Sie eine URL ein' :
-                'Please enter a URL';
-        errorEl.classList.add('show');
+        toast.warning('Please enter a URL');
         return;
     }
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        errorEl.textContent = currentLang === 'ru' ? 'Пожалуйста, введите корректный URL' :
-            currentLang === 'de' ? 'Bitte geben Sie eine gültige URL ein' :
-                'Please enter a valid URL';
-        errorEl.classList.add('show');
+        toast.error('Please enter a valid URL starting with http:// or https://');
         return;
     }
 
+    // Validate custom code
+    if (customCode) {
+        if (!/^[a-zA-Z0-9-_]+$/.test(customCode)) {
+            toast.error('Custom code can only contain letters, numbers, hyphens and underscores');
+            return;
+        }
+        if (customCode.length < 3) {
+            toast.error('Custom code must be at least 3 characters');
+            return;
+        }
+    }
+
+    // Build URL with UTM parameters
+    const utmSource = document.getElementById('utmSource').value.trim();
+    const utmMedium = document.getElementById('utmMedium').value.trim();
+    const utmCampaign = document.getElementById('utmCampaign').value.trim();
+    const utmTerm = document.getElementById('utmTerm').value.trim();
+    const utmContent = document.getElementById('utmContent').value.trim();
+
+    if (utmSource || utmMedium || utmCampaign) {
+        const urlObj = new URL(url);
+        if (utmSource) urlObj.searchParams.set('utm_source', utmSource);
+        if (utmMedium) urlObj.searchParams.set('utm_medium', utmMedium);
+        if (utmCampaign) urlObj.searchParams.set('utm_campaign', utmCampaign);
+        if (utmTerm) urlObj.searchParams.set('utm_term', utmTerm);
+        if (utmContent) urlObj.searchParams.set('utm_content', utmContent);
+        url = urlObj.toString();
+    }
+
     btn.disabled = true;
-    btn.textContent = currentLang === 'ru' ? 'Создание...' :
-        currentLang === 'de' ? 'Erstellen...' :
-            'Creating...';
+    btn.textContent = 'Creating...';
 
     try {
         const token = localStorage.getItem('token');
+        const payload = { url };
+        if (customCode) payload.customCode = customCode;
+
         const response = await fetch('/api/shorten', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': token ? `Bearer ${token}` : ''
             },
-            body: JSON.stringify({ url })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();

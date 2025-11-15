@@ -1090,3 +1090,120 @@ body.dark-theme .hero {
 body.dark-theme .cta {
     background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
 }
+
+/* ===== ADVANCED LINK CREATION ===== */
+.modal-large {
+    max-width: 600px !important;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+.custom-code-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.code-prefix {
+    position: absolute;
+    left: 16px;
+    color: var(--text-gray);
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.custom-code-wrapper input {
+    padding-left: 32px !important;
+}
+
+.toggle-section {
+    margin: 20px 0 12px 0;
+}
+
+.toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-light);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: var(--primary);
+}
+
+.toggle-btn svg:last-child {
+    margin-left: auto;
+    transition: transform 0.3s;
+}
+
+.utm-builder {
+    padding: 20px;
+    background: var(--bg-light);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.utm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.utm-grid .input-group {
+    margin-bottom: 0;
+}
+
+.utm-grid label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.utm-grid input {
+    font-size: 14px;
+    padding: 10px 12px;
+}
+
+/* Dark theme */
+body.dark-theme .toggle-btn {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+body.dark-theme .toggle-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+body.dark-theme .utm-builder {
+    background: #2d3748;
+    border-color: #1a202c;
+}

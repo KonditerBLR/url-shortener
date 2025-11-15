@@ -62,20 +62,41 @@ router.get('/links', async (req, res) => {
 // Создать короткую ссылку
 router.post('/shorten', optionalAuth, async (req, res) => {
   try {
-    const { url } = req.body;
+    const { url, customCode } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
     }
 
     const userId = req.user?.userId || null;
+    let shortCode;
 
-    let shortCode = generateShortCode();
+    // Use custom code if provided
+    if (customCode) {
+      // Validate custom code
+      if (!/^[a-zA-Z0-9-_]+$/.test(customCode)) {
+        return res.status(400).json({ error: 'Custom code can only contain letters, numbers, hyphens and underscores' });
+      }
+      if (customCode.length < 3 || customCode.length > 50) {
+        return res.status(400).json({ error: 'Custom code must be between 3 and 50 characters' });
+      }
 
-    let exists = await db.query('SELECT * FROM urls WHERE short_code = $1', [shortCode]);
-    while (exists.rows.length > 0) {
+      // Check if custom code already exists
+      const exists = await db.query('SELECT * FROM urls WHERE short_code = $1', [customCode]);
+      if (exists.rows.length > 0) {
+        return res.status(409).json({ error: 'This custom code is already taken. Please choose another one.' });
+      }
+
+      shortCode = customCode;
+    } else {
+      // Generate random code
       shortCode = generateShortCode();
-      exists = await db.query('SELECT * FROM urls WHERE short_code = $1', [shortCode]);
+
+      let exists = await db.query('SELECT * FROM urls WHERE short_code = $1', [shortCode]);
+      while (exists.rows.length > 0) {
+        shortCode = generateShortCode();
+        exists = await db.query('SELECT * FROM urls WHERE short_code = $1', [shortCode]);
+      }
     }
 
     await db.query(
