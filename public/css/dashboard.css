@@ -127,7 +127,21 @@ body.dark-theme .sidebar {
 
 .mobile-menu-btn {
     display: none;
-    border: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-white);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 101;
+    flex-shrink: 0;
+}
+
+body.dark-theme .mobile-menu-btn {
+    background: #2d3748;
+    border-color: #1a202c;
 }
 
 .header-right {
@@ -1223,25 +1237,7 @@ body.dark-theme .btn-reset-qr:hover {
         margin-left: 0;
     }
 
-    /* Add mobile menu button */
-    .mobile-menu-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        background: var(--bg-white);
-        border: 2px solid var(--border);
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 101;
-        flex-shrink: 0;
-    }
-
-    body.dark-theme .mobile-menu-btn {
-        background: #2d3748;
-        border-color: #1a202c;
-    }
+    /* Mobile menu button shown via JavaScript */
 
     /* Mobile overlay */
     .sidebar-overlay {
@@ -1684,15 +1680,18 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .dashboard-content {
-        padding: 10px 8px;
+        padding: 12px;
     }
 
     .stats-cards {
-        gap: 8px;
+        gap: 10px;
+        margin-bottom: 16px;
     }
 
     .stat-card {
-        padding: 12px 10px;
+        padding: 14px 12px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .stat-card-value {

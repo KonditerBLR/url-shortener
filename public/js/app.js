@@ -113,10 +113,12 @@ function showLoginModal() {
     // Focus first input for accessibility
     setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
-    // Update text via language system
-    if (typeof updateAuthModalLanguage === 'function') {
-        updateAuthModalLanguage();
-    }
+    // Update text via language system with delay to ensure translations loaded
+    setTimeout(() => {
+        if (typeof updateAuthModalLanguage === 'function') {
+            updateAuthModalLanguage();
+        }
+    }, 50);
 }
 
 function showRegisterModal() {
@@ -129,10 +131,12 @@ function showRegisterModal() {
     // Focus first input for accessibility
     setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
-    // Update text via language system
-    if (typeof updateAuthModalLanguage === 'function') {
-        updateAuthModalLanguage();
-    }
+    // Update text via language system with delay to ensure translations loaded
+    setTimeout(() => {
+        if (typeof updateAuthModalLanguage === 'function') {
+            updateAuthModalLanguage();
+        }
+    }, 50);
 }
 
 function closeAuthModal() {
