@@ -108,15 +108,23 @@ function showLoginModal() {
     const modal = document.getElementById('authModal');
     document.getElementById('confirmPasswordGroup').style.display = 'none';
     document.getElementById('forgotPasswordBtn').style.display = 'block';
+
+    // Update data-lang attributes for login mode
+    document.getElementById('modalTitle').setAttribute('data-lang', 'auth.login_title');
+    document.getElementById('authSubmitBtn').setAttribute('data-lang', 'auth.login_button');
+    document.getElementById('switchBtn').setAttribute('data-lang', 'auth.switch_to_register');
+
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+
+    // Apply translations immediately
+    if (typeof updatePageLanguage === 'function') {
+        updatePageLanguage();
+    }
+
     // Focus first input for accessibility
     setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
-    // Update text via language system
-    if (typeof updateAuthModalLanguage === 'function') {
-        updateAuthModalLanguage();
-    }
 }
 
 function showRegisterModal() {
@@ -124,15 +132,23 @@ function showRegisterModal() {
     const modal = document.getElementById('authModal');
     document.getElementById('confirmPasswordGroup').style.display = 'block';
     document.getElementById('forgotPasswordBtn').style.display = 'none';
+
+    // Update data-lang attributes for register mode
+    document.getElementById('modalTitle').setAttribute('data-lang', 'auth.register_title');
+    document.getElementById('authSubmitBtn').setAttribute('data-lang', 'auth.register_button');
+    document.getElementById('switchBtn').setAttribute('data-lang', 'auth.switch_to_login');
+
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+
+    // Apply translations immediately
+    if (typeof updatePageLanguage === 'function') {
+        updatePageLanguage();
+    }
+
     // Focus first input for accessibility
     setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
-    // Update text via language system
-    if (typeof updateAuthModalLanguage === 'function') {
-        updateAuthModalLanguage();
-    }
 }
 
 function closeAuthModal() {

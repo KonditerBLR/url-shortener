@@ -288,28 +288,31 @@
         <div class="modal-overlay" onclick="closeAuthModal()" aria-hidden="true"></div>
         <div class="modal-content">
             <button class="modal-close" onclick="closeAuthModal()" aria-label="Close modal">×</button>
-            <h2 id="modalTitle">Login</h2>
+            <h2 id="modalTitle" data-lang="auth.login_title">Login</h2>
             <form onsubmit="event.preventDefault();" aria-label="Authentication form">
                 <div class="input-group">
-                    <label for="authEmail">Email:</label>
-                    <input type="email" id="authEmail" placeholder="your@email.com"
+                    <label for="authEmail" data-lang="auth.email_label">Email:</label>
+                    <input type="email" id="authEmail" data-lang="auth.email_placeholder"
+                           placeholder="your@email.com"
                            aria-required="true" autocomplete="email" required>
                 </div>
                 <div class="input-group">
-                    <label for="authPassword">Password:</label>
-                    <input type="password" id="authPassword" placeholder="Minimum 8 characters, letters and numbers"
+                    <label for="authPassword" data-lang="auth.password_label">Password:</label>
+                    <input type="password" id="authPassword" data-lang="auth.password_placeholder"
+                           placeholder="Minimum 8 characters, letters and numbers"
                            aria-required="true" autocomplete="current-password" required>
                 </div>
                 <div class="input-group" id="confirmPasswordGroup" style="display: none;">
-                    <label for="authPasswordConfirm">Confirm Password:</label>
-                    <input type="password" id="authPasswordConfirm" placeholder="Repeat password"
+                    <label for="authPasswordConfirm" data-lang="auth.password_confirm_label">Confirm Password:</label>
+                    <input type="password" id="authPasswordConfirm" data-lang="auth.password_confirm_placeholder"
+                           placeholder="Repeat password"
                            aria-required="false" autocomplete="new-password">
                 </div>
                 <div class="error" id="authError" role="alert" aria-live="polite"></div>
                 <div class="success" id="authSuccess" role="status" aria-live="polite"></div>
-                <button type="button" class="btn-primary btn-full" id="authSubmitBtn">Login</button>
-                <button type="button" class="btn-text" id="switchBtn">Don't have an account? Sign up</button>
-                <button type="button" class="btn-text" id="forgotPasswordBtn" style="display: none;">Forgot password?</button>
+                <button type="button" class="btn-primary btn-full" id="authSubmitBtn" data-lang="auth.login_button">Login</button>
+                <button type="button" class="btn-text" id="switchBtn" data-lang="auth.switch_to_register">Don't have an account? Sign up</button>
+                <button type="button" class="btn-text" id="forgotPasswordBtn" data-lang="auth.forgot_password" style="display: none;">Forgot password?</button>
             </form>
         </div>
     </div>

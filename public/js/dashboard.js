@@ -424,9 +424,9 @@ async function setLinkPassword(urlId) {
 
     // Create modal for password settings
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content dashboard-modal">
             <h3>${link.has_password ? '🔒 Update Password' : '🔓 Set Password Protection'}</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="linkPassword">Password:</label>
@@ -434,7 +434,7 @@ async function setLinkPassword(urlId) {
                 <input type="password" id="linkPasswordConfirm" class="form-control" placeholder="Confirm password" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove password protection</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="saveLinkPassword(${urlId})">Save</button>
                 ${link.has_password ? `<button class="btn-danger" onclick="removeLinkPassword(${urlId})">Remove Password</button>` : ''}
@@ -546,16 +546,16 @@ async function setLinkExpiration(urlId) {
     const currentExpiration = link.expires_at ? new Date(link.expires_at).toISOString().slice(0, 16) : '';
 
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content dashboard-modal">
             <h3>Set Link Expiration</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="expirationDate">Expiration Date & Time:</label>
                 <input type="datetime-local" id="expirationDate" class="form-control" value="${currentExpiration}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove expiration</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="saveExpiration(${urlId})">Save</button>
                 ${currentExpiration ? `<button class="btn-danger" onclick="removeExpiration(${urlId})">Remove</button>` : ''}
@@ -1014,12 +1014,18 @@ async function loadTags() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - return empty array
+            return [];
+        }
+
         if (response.ok) {
             allTags = await response.json();
             return allTags;
         }
     } catch (error) {
-        console.error('Error loading tags:', error);
+        // Silently handle errors and return empty array
+        // This is expected when API endpoints are not yet implemented
     }
     return [];
 }
@@ -2055,6 +2061,7 @@ async function showAnalytics() {
         }
 
         linksListDiv.innerHTML = `
+            <!-- Desktop Table -->
             <div class="links-table">
                 <table>
                     <thead>
@@ -2090,6 +2097,37 @@ async function showAnalytics() {
                         `).join('')}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="links-mobile-cards">
+                ${links.map(link => `
+                    <div class="link-mobile-card">
+                        <div class="link-mobile-card-header">
+                            <div>
+                                <a href="/${link.short_code}" target="_blank" class="link-mobile-card-title">
+                                    /${link.short_code}
+                                </a>
+                                <div class="link-mobile-card-url">${link.original_url.substring(0, 40)}${link.original_url.length > 40 ? '...' : ''}</div>
+                            </div>
+                        </div>
+                        <div class="link-mobile-card-stats">
+                            <div class="link-mobile-card-stat">
+                                <div class="link-mobile-card-stat-label">Clicks</div>
+                                <div class="link-mobile-card-stat-value">${link.clicks || 0}</div>
+                            </div>
+                            <div class="link-mobile-card-stat">
+                                <div class="link-mobile-card-stat-label">Created</div>
+                                <div class="link-mobile-card-stat-value">${new Date(link.created_at).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="link-mobile-card-actions">
+                            <button class="btn-action btn-primary" onclick="viewLinkAnalytics(${link.id}, '${link.short_code}')">
+                                View Analytics
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         `;
 
@@ -2469,6 +2507,12 @@ async function loadApiKeys() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - show empty state
+            renderApiKeys([]);
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Failed to load API keys');
         }
@@ -2477,11 +2521,8 @@ async function loadApiKeys() {
         renderApiKeys(apiKeys);
     } catch (error) {
         console.error('Error loading API keys:', error);
-        container.innerHTML = `
-            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
-                Failed to load API keys
-            </p>
-        `;
+        // Show empty state instead of error for connection issues
+        renderApiKeys([]);
     }
 }
 
@@ -2552,9 +2593,9 @@ function renderApiKeys(apiKeys) {
 
 function showCreateApiKeyModal() {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content dashboard-modal">
             <h3>Create New API Key</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="apiKeyName">API Key Name:</label>
@@ -2564,7 +2605,7 @@ function showCreateApiKeyModal() {
                 <input type="number" id="apiKeyExpires" class="form-control" placeholder="Leave empty for no expiration" min="1" max="365" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Optional. Leave empty for API key that never expires.</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="createApiKey()">Create API Key</button>
             </div>
@@ -2613,9 +2654,9 @@ async function createApiKey() {
 
         // Show the API key in a new modal (only shown once!)
         const keyModal = document.createElement('div');
-        keyModal.className = 'modal-overlay';
+        keyModal.className = 'modal-overlay standalone';
         keyModal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-content dashboard-modal modal-wide">
                 <h3 style="color: #10b981;">✓ API Key Created Successfully!</h3>
                 <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
                     <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this API key now. You won't be able to see it again!</p>
@@ -2685,9 +2726,11 @@ async function showWebhooks() {
     content.innerHTML = `
         <div class="webhooks-section">
             <div class="section-header">
-                <h2 class="section-title">Webhooks</h2>
-                <p>Receive real-time notifications when events occur</p>
-                <button class="btn-primary" onclick="showCreateWebhookModal()" style="margin-top: 20px;">
+                <div>
+                    <h2 class="section-title">Webhooks</h2>
+                    <p style="color: var(--text-gray); margin-top: 4px; font-size: 14px;">Receive real-time notifications when events occur</p>
+                </div>
+                <button class="btn-primary" onclick="showCreateWebhookModal()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
@@ -2700,18 +2743,18 @@ async function showWebhooks() {
                 <p style="text-align: center; color: var(--text-gray); padding: 40px;">Loading...</p>
             </div>
 
-            <div class="webhook-docs" style="margin-top: 40px; padding: 24px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
-                <h3 style="margin-bottom: 16px;">Webhook Events</h3>
-                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <h4 style="margin-bottom: 8px;">Available Events:</h4>
-                    <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-dark);">
+            <div class="webhook-docs">
+                <h3 class="webhook-docs-title">Webhook Events</h3>
+                <div class="webhook-docs-section">
+                    <h4 class="webhook-docs-subtitle">Available Events:</h4>
+                    <ul class="webhook-docs-list">
                         <li><code>link.clicked</code> - Triggered when someone clicks your short link</li>
                         <li><code>link.created</code> - Triggered when you create a new short link</li>
                     </ul>
                 </div>
-                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
-                    <h4 style="margin-bottom: 8px;">Payload Example:</h4>
-                    <pre style="background: #fff; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px;"><code>{
+                <div class="webhook-docs-section">
+                    <h4 class="webhook-docs-subtitle">Payload Example:</h4>
+                    <pre class="webhook-docs-code"><code>{
   "event": "link.clicked",
   "timestamp": "2024-01-15T10:30:00Z",
   "data": {
@@ -2724,7 +2767,7 @@ async function showWebhooks() {
   }
 }</code></pre>
                 </div>
-                <p style="color: var(--text-gray); font-size: 14px; margin-top: 16px;">
+                <p class="webhook-docs-note">
                     Webhooks include an <code>X-Webhook-Signature</code> header for security verification using HMAC SHA-256.
                 </p>
             </div>
@@ -2747,6 +2790,12 @@ async function loadWebhooks() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - show empty state
+            renderWebhooks([]);
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Failed to load webhooks');
         }
@@ -2755,11 +2804,8 @@ async function loadWebhooks() {
         renderWebhooks(webhooks);
     } catch (error) {
         console.error('Error loading webhooks:', error);
-        container.innerHTML = `
-            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
-                Failed to load webhooks
-            </p>
-        `;
+        // Show empty state instead of error for connection issues
+        renderWebhooks([]);
     }
 }
 
@@ -2785,6 +2831,7 @@ function renderWebhooks(webhooks) {
     }
 
     container.innerHTML = `
+        <!-- Desktop Table -->
         <table class="api-keys-table">
             <thead>
                 <tr>
@@ -2824,14 +2871,56 @@ function renderWebhooks(webhooks) {
                 }).join('')}
             </tbody>
         </table>
+
+        <!-- Mobile Cards -->
+        <div class="webhooks-mobile-cards">
+            ${webhooks.map(webhook => {
+                const lastTriggered = webhook.last_triggered_at
+                    ? new Date(webhook.last_triggered_at).toLocaleDateString()
+                    : 'Never';
+                const statusClass = webhook.is_active ? 'active' : 'inactive';
+                const statusText = webhook.is_active ? 'Active' : 'Inactive';
+
+                return `
+                    <div class="webhook-mobile-card">
+                        <div class="webhook-mobile-card-header">
+                            <div class="webhook-mobile-card-title">${webhook.webhook_name}</div>
+                            <div class="webhook-mobile-card-url">${webhook.endpoint_url}</div>
+                        </div>
+                        <div class="webhook-mobile-card-info">
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Events</span>
+                                <span class="webhook-mobile-card-info-value">${webhook.events.join(', ')}</span>
+                            </div>
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Last Triggered</span>
+                                <span class="webhook-mobile-card-info-value">${lastTriggered}</span>
+                            </div>
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Status</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="webhook-mobile-card-actions">
+                            <button class="btn-secondary btn-sm" onclick="toggleWebhook(${webhook.id})">
+                                ${webhook.is_active ? 'Disable' : 'Enable'}
+                            </button>
+                            <button class="btn-danger btn-sm" onclick="deleteWebhook(${webhook.id}, '${webhook.webhook_name}')">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
     `;
 }
 
 function showCreateWebhookModal() {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content dashboard-modal">
             <h3>Create New Webhook</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="webhookName">Webhook Name:</label>
@@ -2841,18 +2930,18 @@ function showCreateWebhookModal() {
                 <input type="url" id="webhookUrl" class="form-control" placeholder="https://your-server.com/webhook" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 16px;">
 
                 <label>Events to Subscribe:</label>
-                <div style="margin: 10px 0;">
-                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <input type="checkbox" value="link.clicked" checked style="margin-right: 8px;">
-                        <span>link.clicked - When someone clicks your link</span>
+                <div class="webhook-events-list">
+                    <label class="webhook-event-item">
+                        <input type="checkbox" value="link.clicked" checked>
+                        <span class="webhook-event-text">link.clicked - When someone clicks your link</span>
                     </label>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" value="link.created" style="margin-right: 8px;">
-                        <span>link.created - When you create a new link</span>
+                    <label class="webhook-event-item">
+                        <input type="checkbox" value="link.created">
+                        <span class="webhook-event-text">link.created - When you create a new link</span>
                     </label>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="createWebhook()">Create Webhook</button>
             </div>
@@ -2911,9 +3000,9 @@ async function createWebhook() {
 
         // Show secret key
         const secretModal = document.createElement('div');
-        secretModal.className = 'modal-overlay';
+        secretModal.className = 'modal-overlay standalone';
         secretModal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-content dashboard-modal modal-wide">
                 <h3 style="color: #10b981;">✓ Webhook Created Successfully!</h3>
                 <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
                     <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this secret key for signature verification!</p>
@@ -3036,10 +3125,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.profile');
                 showProfile();
             } else if (page === 'api-keys') {
-                document.getElementById('pageTitle').textContent = 'API Keys';
+                const pageTitle = document.getElementById('pageTitle');
+                pageTitle.removeAttribute('data-lang');
+                pageTitle.textContent = 'API Keys';
                 showApiKeys();
             } else if (page === 'webhooks') {
-                document.getElementById('pageTitle').textContent = 'Webhooks';
+                const pageTitle = document.getElementById('pageTitle');
+                pageTitle.removeAttribute('data-lang');
+                pageTitle.textContent = 'Webhooks';
                 showWebhooks();
             }
 
