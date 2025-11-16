@@ -113,6 +113,26 @@ async function loadLinks() {
     return [];
 }
 
+// Close all modals
+function closeAllModals() {
+    // Close all modal windows
+    const modals = document.querySelectorAll('.modal.show');
+    modals.forEach(modal => modal.classList.remove('show'));
+
+    // Reset any modal states
+    currentTagSelectUrlId = null;
+
+    // Reset tag creator section
+    const creatorSection = document.getElementById('tagCreatorSection');
+    if (creatorSection) {
+        creatorSection.style.display = 'none';
+    }
+    const toggleBtn = document.querySelector('.btn-toggle-creator');
+    if (toggleBtn) {
+        toggleBtn.classList.remove('active');
+    }
+}
+
 // Отображение Overview
 function showOverview() {
     const content = document.getElementById('dashboardContent');
@@ -1710,39 +1730,87 @@ let currentTagSelectUrlId = null;
 async function showAddTagMenu(urlId, event) {
     event.stopPropagation();
 
-    if (allTags.length === 0) {
-        toast.info(t('dashboard.tags.no_available'));
-        showTagsManager();
-        return;
-    }
-
     // Get current link's tags
     const link = allLinksData.find(l => l.id === urlId);
-    const currentTagIds = link && link.tags ? link.tags.map(t => t.id) : [];
-
-    // Filter available tags (not already assigned)
-    const availableTags = allTags.filter(t => !currentTagIds.includes(t.id));
-
-    if (availableTags.length === 0) {
-        toast.info(t('dashboard.tags.all_assigned'));
-        return;
-    }
+    const currentTags = link && link.tags ? link.tags : [];
+    const currentTagIds = currentTags.map(t => t.id);
 
     // Store current URL ID for tag selection
     currentTagSelectUrlId = urlId;
 
+    // Check tag limit
+    const MAX_TAGS = 5;
+    const hasReachedLimit = currentTags.length >= MAX_TAGS;
+
     // Populate tag selector modal
     const tagSelectorList = document.getElementById('tagSelectorList');
-    tagSelectorList.innerHTML = availableTags.map(tag => `
-        <div class="tag-selector-item" onclick="selectTagForLink(${tag.id})">
-            <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
-            <div class="tag-selector-name">${tag.name}</div>
-            <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 11 12 14 22 4"></polyline>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-            </svg>
-        </div>
-    `).join('');
+
+    let html = '';
+
+    // Show current tags (removable)
+    if (currentTags.length > 0) {
+        html += '<div style="margin-bottom: 20px;"><h4 style="font-size: 14px; color: var(--text-gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Current Tags (${currentTags.length}/${MAX_TAGS})</h4>';
+        html += currentTags.map(tag => `
+            <div class="tag-selector-item" onclick="removeTagFromLinkInModal(${tag.id})" style="border-color: ${tag.color};">
+                <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
+                <div class="tag-selector-name">${tag.name}</div>
+                <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+        `).join('');
+        html += '</div>';
+    }
+
+    // Show available tags (addable) - only if not reached limit
+    if (!hasReachedLimit) {
+        const availableTags = allTags.filter(t => !currentTagIds.includes(t.id));
+
+        if (availableTags.length > 0) {
+            html += '<div><h4 style="font-size: 14px; color: var(--text-gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Available Tags</h4>';
+            html += availableTags.map(tag => `
+                <div class="tag-selector-item" onclick="selectTagForLink(${tag.id})">
+                    <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
+                    <div class="tag-selector-name">${tag.name}</div>
+                    <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+            `).join('');
+            html += '</div>';
+        } else if (currentTags.length === 0) {
+            html += '<p style="text-align: center; color: var(--text-gray); padding: 20px;">No tags available. Create one below!</p>';
+        }
+    } else {
+        html += '<p style="text-align: center; color: var(--text-gray); padding: 20px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; margin-top: 10px;"><strong>Tag limit reached!</strong><br>Maximum ${MAX_TAGS} tags per link. Remove a tag to add another.</p>';
+    }
+
+    tagSelectorList.innerHTML = html;
+
+    // Disable tag creator if limit reached
+    const toggleCreatorBtn = document.querySelector('.btn-toggle-creator');
+    const createTagBtn = document.getElementById('createQuickTagBtn');
+    if (hasReachedLimit) {
+        if (toggleCreatorBtn) {
+            toggleCreatorBtn.disabled = true;
+            toggleCreatorBtn.style.opacity = '0.5';
+            toggleCreatorBtn.style.cursor = 'not-allowed';
+        }
+        if (createTagBtn) {
+            createTagBtn.disabled = true;
+        }
+    } else {
+        if (toggleCreatorBtn) {
+            toggleCreatorBtn.disabled = false;
+            toggleCreatorBtn.style.opacity = '1';
+            toggleCreatorBtn.style.cursor = 'pointer';
+        }
+        if (createTagBtn) {
+            createTagBtn.disabled = false;
+        }
+    }
 
     // Open modal
     document.getElementById('tagSelectorModal').classList.add('show');
@@ -1753,14 +1821,37 @@ async function showAddTagMenu(urlId, event) {
     }
 }
 
+// Remove tag from link within modal (refresh modal after)
+async function removeTagFromLinkInModal(tagId) {
+    if (!currentTagSelectUrlId) return;
+
+    const success = await removeTagFromLink(currentTagSelectUrlId, tagId);
+    if (success) {
+        await showLinks();
+        // Re-open the modal with updated tags
+        const event = { stopPropagation: () => {} };
+        showAddTagMenu(currentTagSelectUrlId, event);
+    }
+}
+
 // Select tag and add to link
 async function selectTagForLink(tagId) {
     if (!currentTagSelectUrlId) return;
 
+    // Check tag limit before adding
+    const link = allLinksData.find(l => l.id === currentTagSelectUrlId);
+    const currentTags = link && link.tags ? link.tags : [];
+    if (currentTags.length >= 5) {
+        toast.warning('Maximum 5 tags per link');
+        return;
+    }
+
     const success = await addTagToLink(currentTagSelectUrlId, tagId);
     if (success) {
-        closeTagSelector();
         await showLinks();
+        // Re-open the modal with updated tags
+        const event = { stopPropagation: () => {} };
+        showAddTagMenu(currentTagSelectUrlId, event);
     }
 }
 
@@ -1811,6 +1902,14 @@ function toggleTagCreator() {
 async function createAndAttachTag() {
     if (!currentTagSelectUrlId) return;
 
+    // Check tag limit before creating
+    const link = allLinksData.find(l => l.id === currentTagSelectUrlId);
+    const currentTags = link && link.tags ? link.tags : [];
+    if (currentTags.length >= 5) {
+        toast.warning('Maximum 5 tags per link');
+        return;
+    }
+
     const nameInput = document.getElementById('quickTagName');
     const colorInput = document.getElementById('quickTagColor');
     const name = nameInput.value.trim();
@@ -1829,10 +1928,15 @@ async function createAndAttachTag() {
         const success = await addTagToLink(currentTagSelectUrlId, newTag.id);
         if (success) {
             toast.success('Tag created and attached to link');
-            closeTagSelector();
+            // Clear inputs
+            nameInput.value = '';
+            colorInput.value = '#6366f1';
             // Refresh tags and links
             await loadTags();
             await showLinks();
+            // Re-open the modal with updated tags
+            const event = { stopPropagation: () => {} };
+            showAddTagMenu(currentTagSelectUrlId, event);
         }
     }
 }
@@ -2841,6 +2945,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
+
+            // Close all modals when switching sections
+            closeAllModals();
 
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');

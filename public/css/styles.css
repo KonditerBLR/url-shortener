@@ -938,6 +938,8 @@ body.dark-theme .footer {
     border-radius: 24px;
     max-width: 440px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
     animation: modalSlide 0.3s ease;
     transition: background 0.3s ease;
@@ -1239,9 +1241,14 @@ body.dark-theme .modal-content {
     }
 
     .modal-content {
-        max-width: 90%;
+        max-width: min(90vw, 500px);
+        width: 90vw;
         padding: 32px 24px;
-        margin: 20px;
+        margin: 20px auto;
+    }
+
+    .modal-large {
+        max-width: min(90vw, 600px) !important;
     }
 
     .modal-content h2 {
@@ -1468,11 +1475,28 @@ body.dark-theme .modal-content {
         font-size: 13px;
     }
 
+    /* Compact language selector for Mobile */
+    @media (max-width: 425px) {
+        .lang-current {
+            padding: 7px 9px;
+            font-size: 12px;
+        }
+
+        .lang-menu {
+            min-width: 150px;
+        }
+    }
+
     .modal-content {
-        max-width: 95%;
-        width: calc(100% - 20px);
+        max-width: min(95vw, 500px);
+        width: 95vw;
         padding: 28px 20px;
-        margin: 10px;
+        margin: 10px auto;
+        border-radius: 16px;
+    }
+
+    .modal-large {
+        max-width: min(95vw, 600px) !important;
     }
 
     .modal-content h2 {
@@ -1635,8 +1659,25 @@ body.dark-theme .modal-content {
         height: 34px;
     }
 
-    .lang-dropdown {
-        display: none;
+    /* Make language selector more compact on very small screens */
+    .lang-current {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: auto;
+    }
+
+    .lang-current span {
+        display: none; /* Hide flag emoji on very small screens */
+    }
+
+    .lang-current::after {
+        content: '🌐'; /* Show globe icon instead */
+        font-size: 16px;
+    }
+
+    .lang-menu {
+        min-width: 140px;
+        right: -10px;
     }
 
     .btn-primary, .btn-secondary {
@@ -1646,10 +1687,15 @@ body.dark-theme .modal-content {
 
     .modal-content {
         max-width: 100%;
-        width: 100%;
-        margin: 0;
+        width: calc(100% - 24px);
+        margin: 12px;
         padding: 24px 16px;
         border-radius: 12px;
+        max-height: calc(100vh - 24px);
+    }
+
+    .modal-large {
+        max-width: 100% !important;
     }
 
     .modal-content h2 {
@@ -1739,6 +1785,42 @@ body.dark-theme .feature-card h3 {
 body.dark-theme .step-card p,
 body.dark-theme .feature-card p {
     color: var(--text-gray);
+}
+
+/* ===== DARK THEME - ALL INPUT/TEXTAREA/SELECT FIELDS ===== */
+body.dark-theme input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+body.dark-theme textarea,
+body.dark-theme select {
+    background: #1a202c;
+    color: #f7fafc;
+    border-color: #2d3748;
+}
+
+body.dark-theme input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+body.dark-theme textarea:focus,
+body.dark-theme select:focus {
+    background: #1a202c;
+    color: #f7fafc;
+    border-color: var(--primary);
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+    color: #718096;
+}
+
+/* SVG icons color in dark theme */
+body.dark-theme svg:not(.keep-color) {
+    color: #cbd5e0;
+}
+
+body.dark-theme .modal-close svg,
+body.dark-theme .lang-current svg,
+body.dark-theme .btn-secondary svg,
+body.dark-theme .btn-action svg,
+body.dark-theme .btn-primary svg,
+body.dark-theme .btn-hero svg {
+    color: inherit;
 }
 
 /* ===== ADVANCED LINK CREATION ===== */
