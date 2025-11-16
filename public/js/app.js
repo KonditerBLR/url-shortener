@@ -53,13 +53,13 @@ async function heroShorten() {
     const btn = event.target;
 
     if (!url) {
-        toast.warning('Пожалуйста, введите URL');
+        toast.warning(t('hero.error_empty_url'));
         return;
     }
 
     // Показываем загрузку
     btn.disabled = true;
-    btn.textContent = 'Загрузка...';
+    btn.textContent = t('hero.loading');
 
     try {
         const response = await fetch('/api/shorten', {
@@ -79,13 +79,13 @@ async function heroShorten() {
             // Плавная прокрутка к результату
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-            toast.error(data.error || 'Ошибка');
+            toast.error(data.error || t('hero.error'));
         }
     } catch (error) {
-        toast.error('Ошибка соединения');
+        toast.error(t('hero.error_connection'));
     } finally {
         btn.disabled = false;
-        btn.textContent = 'Сократить';
+        btn.textContent = t('hero.button');
     }
 }
 
@@ -95,7 +95,7 @@ function copyHeroUrl() {
     navigator.clipboard.writeText(input.value).then(() => {
         const btn = event.target;
         const originalText = btn.textContent;
-        btn.textContent = '✓ Скопировано';
+        btn.textContent = t('result.copied');
         setTimeout(() => {
             btn.textContent = originalText;
         }, 2000);
@@ -105,28 +105,40 @@ function copyHeroUrl() {
 // ===== AUTH MODAL =====
 function showLoginModal() {
     isLoginMode = true;
-    document.getElementById('modalTitle').textContent = 'Вход';
-    document.getElementById('authSubmitBtn').textContent = 'Войти';
-    document.getElementById('switchBtn').textContent = 'Нет аккаунта? Зарегистрироваться';
+    const modal = document.getElementById('authModal');
     document.getElementById('confirmPasswordGroup').style.display = 'none';
     document.getElementById('forgotPasswordBtn').style.display = 'block';
-    document.getElementById('authModal').classList.add('show');
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    // Focus first input for accessibility
+    setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
+    // Update text via language system
+    if (typeof updateAuthModalLanguage === 'function') {
+        updateAuthModalLanguage();
+    }
 }
 
 function showRegisterModal() {
     isLoginMode = false;
-    document.getElementById('modalTitle').textContent = 'Регистрация';
-    document.getElementById('authSubmitBtn').textContent = 'Зарегистрироваться';
-    document.getElementById('switchBtn').textContent = 'Уже есть аккаунт? Войти';
+    const modal = document.getElementById('authModal');
     document.getElementById('confirmPasswordGroup').style.display = 'block';
     document.getElementById('forgotPasswordBtn').style.display = 'none';
-    document.getElementById('authModal').classList.add('show');
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    // Focus first input for accessibility
+    setTimeout(() => document.getElementById('authEmail')?.focus(), 100);
     clearAuthMessages();
+    // Update text via language system
+    if (typeof updateAuthModalLanguage === 'function') {
+        updateAuthModalLanguage();
+    }
 }
 
 function closeAuthModal() {
-    document.getElementById('authModal').classList.remove('show');
+    const modal = document.getElementById('authModal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
     document.getElementById('authEmail').value = '';
     document.getElementById('authPassword').value = '';
     document.getElementById('authPasswordConfirm').value = '';
@@ -159,25 +171,25 @@ document.getElementById('authSubmitBtn')?.addEventListener('click', async functi
     const btn = this;
     btn.disabled = true;
     const originalText = btn.textContent;
-    btn.textContent = 'Загрузка...';
+    btn.textContent = t('auth.loading');
 
     try {
         if (!email || !password) {
-            errorDiv.textContent = 'Заполните все поля';
+            errorDiv.textContent = t('auth.error_empty');
             errorDiv.classList.add('show');
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            errorDiv.textContent = 'Введите корректный email';
+            errorDiv.textContent = t('auth.error_email');
             errorDiv.classList.add('show');
             return;
         }
 
         if (!isLoginMode) {
             if (password.length < 8) {
-                errorDiv.textContent = 'Пароль должен быть минимум 8 символов';
+                errorDiv.textContent = t('auth.error_password_short');
                 errorDiv.classList.add('show');
                 return;
             }
@@ -185,13 +197,13 @@ document.getElementById('authSubmitBtn')?.addEventListener('click', async functi
             const hasLetter = /[a-zA-Z]/.test(password);
             const hasNumber = /[0-9]/.test(password);
             if (!hasLetter || !hasNumber) {
-                errorDiv.textContent = 'Пароль должен содержать буквы и цифры';
+                errorDiv.textContent = t('auth.error_password_format');
                 errorDiv.classList.add('show');
                 return;
             }
 
             if (password !== passwordConfirm) {
-                errorDiv.textContent = 'Пароли не совпадают';
+                errorDiv.textContent = t('auth.error_password_mismatch');
                 errorDiv.classList.add('show');
                 return;
             }
@@ -208,7 +220,7 @@ document.getElementById('authSubmitBtn')?.addEventListener('click', async functi
 
         if (data.success) {
             if (!isLoginMode && data.needsVerification) {
-                successDiv.innerHTML = '✅ Регистрация успешна!<br>Проверьте почту для подтверждения email.<br><small style="color: #999;">Окно закроется через 5 секунд</small>';
+                successDiv.innerHTML = t('auth.success_registered');
                 successDiv.classList.add('show');
                 setTimeout(() => {
                     closeAuthModal();
@@ -224,7 +236,7 @@ document.getElementById('authSubmitBtn')?.addEventListener('click', async functi
             errorDiv.classList.add('show');
         }
     } catch (error) {
-        errorDiv.textContent = 'Ошибка соединения';
+        errorDiv.textContent = t('auth.error_connection');
         errorDiv.classList.add('show');
     } finally {
         btn.disabled = false;
@@ -241,7 +253,7 @@ document.getElementById('forgotPasswordBtn')?.addEventListener('click', function
     clearAuthMessages();
 
     if (!email) {
-        errorDiv.textContent = 'Введите email';
+        errorDiv.textContent = t('auth.forgot_password_prompt');
         errorDiv.classList.add('show');
         return;
     }
@@ -254,17 +266,28 @@ document.getElementById('forgotPasswordBtn')?.addEventListener('click', function
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                successDiv.textContent = 'Письмо отправлено на ваш email';
+                successDiv.textContent = data.message || t('auth.success_login');
                 successDiv.classList.add('show');
             } else {
-                errorDiv.textContent = data.error || 'Ошибка';
+                errorDiv.textContent = data.error || t('hero.error');
                 errorDiv.classList.add('show');
             }
         })
         .catch(error => {
-            errorDiv.textContent = 'Ошибка соединения';
+            errorDiv.textContent = t('auth.error_connection');
             errorDiv.classList.add('show');
         });
+});
+
+// ===== KEYBOARD NAVIGATION =====
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const authModal = document.getElementById('authModal');
+        if (authModal && authModal.classList.contains('show')) {
+            closeAuthModal();
+        }
+    }
 });
 
 // ===== ENTER KEY =====

@@ -8,7 +8,11 @@
     "subtitle": "Erstellen Sie Kurzlinks, verfolgen Sie Klickstatistiken und generieren Sie QR-Codes in Sekunden",
     "input_placeholder": "Fügen Sie Ihren langen Link hier ein...",
     "button": "Verkürzen",
-    "hint": "Kostenlos, keine Registrierung • Erstellen Sie ein Konto für erweiterte Analysen"
+    "hint": "Kostenlos, keine Registrierung • Erstellen Sie ein Konto für erweiterte Analysen",
+    "error_empty_url": "Bitte geben Sie eine URL ein",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "error_connection": "Verbindungsfehler"
   },
   "result": {
     "label": "Ihr Kurzlink:",
@@ -70,11 +74,14 @@
     "switch_to_register": "Noch kein Konto? Registrieren",
     "switch_to_login": "Bereits ein Konto? Anmelden",
     "forgot_password": "Passwort vergessen?",
+    "forgot_password_prompt": "Geben Sie Ihre E-Mail ein",
     "error_empty": "Bitte alle Felder ausfüllen",
     "error_email": "Bitte gültige E-Mail eingeben",
     "error_password_short": "Passwort muss mindestens 8 Zeichen haben",
     "error_password_format": "Passwort muss Buchstaben und Zahlen enthalten",
     "error_password_mismatch": "Passwörter stimmen nicht überein",
+    "error_connection": "Verbindungsfehler",
+    "loading": "Wird geladen...",
     "success_registered": "✅ Registrierung erfolgreich!<br>Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.<br><small style='color: #999;'>Dieses Fenster schließt sich in 5 Sekunden</small>",
     "success_login": "Anmeldung erfolgreich!"
   },

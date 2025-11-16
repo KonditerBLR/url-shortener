@@ -21,8 +21,8 @@
                     <span class="logo-text">CutTo</span>
                 </div>
                 <nav class="nav">
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
-                        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">
+                        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <circle cx="12" cy="12" r="5"/>
                             <line x1="12" y1="1" x2="12" y2="3"/>
                             <line x1="12" y1="21" x2="12" y2="23"/>
@@ -33,19 +33,19 @@
                             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                         </svg>
-                        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                         </svg>
                     </button>
                     <div class="lang-dropdown">
-                        <button class="lang-current" onclick="toggleLangMenu()">
-                            <span id="currentLangFlag">🇬🇧</span>
+                        <button class="lang-current" onclick="toggleLangMenu()" aria-label="Select language" aria-haspopup="true" aria-expanded="false">
+                            <span id="currentLangFlag" aria-hidden="true">🇬🇧</span>
                             <span id="currentLangCode">EN</span>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
                                 <path d="M6 8l-4-4h8z" />
                             </svg>
                         </button>
-                        <div class="lang-menu" id="langMenu">
+                        <div class="lang-menu" id="langMenu" role="menu" aria-label="Language options">
                             <!-- Языки генерируются автоматически из languages.json -->
                         </div>
                     </div>
@@ -68,9 +68,10 @@
                 <!-- Quick Shortener -->
                 <div class="quick-shortener">
                     <div class="input-wrapper">
-                        <input type="text" id="heroUrlInput" data-lang="hero.input_placeholder"
-                            placeholder="Paste your long link here..." class="hero-input">
-                        <button class="btn-hero" data-lang="hero.button" onclick="heroShorten()">Shorten</button>
+                        <input type="url" id="heroUrlInput" data-lang="hero.input_placeholder"
+                            placeholder="Paste your long link here..." class="hero-input"
+                            aria-label="Enter URL to shorten" autocomplete="url">
+                        <button class="btn-hero" data-lang="hero.button" onclick="heroShorten()" aria-label="Shorten URL">Shorten</button>
                     </div>
                     <p class="hint" data-lang="hero.hint">Free, no registration • Create an account for advanced
                         analytics</p>
@@ -283,28 +284,33 @@
     </footer>
 
     <!-- Auth Modal -->
-    <div class="modal" id="authModal">
-        <div class="modal-overlay" onclick="closeAuthModal()"></div>
+    <div class="modal" id="authModal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-overlay" onclick="closeAuthModal()" aria-hidden="true"></div>
         <div class="modal-content">
-            <button class="modal-close" onclick="closeAuthModal()">×</button>
+            <button class="modal-close" onclick="closeAuthModal()" aria-label="Close modal">×</button>
             <h2 id="modalTitle">Login</h2>
-            <div class="input-group">
-                <label for="authEmail">Email:</label>
-                <input type="email" id="authEmail" placeholder="your@email.com">
-            </div>
-            <div class="input-group">
-                <label for="authPassword">Password:</label>
-                <input type="password" id="authPassword" placeholder="Minimum 8 characters, letters and numbers">
-            </div>
-            <div class="input-group" id="confirmPasswordGroup" style="display: none;">
-                <label for="authPasswordConfirm">Confirm Password:</label>
-                <input type="password" id="authPasswordConfirm" placeholder="Repeat password">
-            </div>
-            <div class="error" id="authError"></div>
-            <div class="success" id="authSuccess"></div>
-            <button class="btn-primary btn-full" id="authSubmitBtn">Login</button>
-            <button class="btn-text" id="switchBtn">Don't have an account? Sign up</button>
-            <button class="btn-text" id="forgotPasswordBtn" style="display: none;">Forgot password?</button>
+            <form onsubmit="event.preventDefault();" aria-label="Authentication form">
+                <div class="input-group">
+                    <label for="authEmail">Email:</label>
+                    <input type="email" id="authEmail" placeholder="your@email.com"
+                           aria-required="true" autocomplete="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="authPassword">Password:</label>
+                    <input type="password" id="authPassword" placeholder="Minimum 8 characters, letters and numbers"
+                           aria-required="true" autocomplete="current-password" required>
+                </div>
+                <div class="input-group" id="confirmPasswordGroup" style="display: none;">
+                    <label for="authPasswordConfirm">Confirm Password:</label>
+                    <input type="password" id="authPasswordConfirm" placeholder="Repeat password"
+                           aria-required="false" autocomplete="new-password">
+                </div>
+                <div class="error" id="authError" role="alert" aria-live="polite"></div>
+                <div class="success" id="authSuccess" role="status" aria-live="polite"></div>
+                <button type="button" class="btn-primary btn-full" id="authSubmitBtn">Login</button>
+                <button type="button" class="btn-text" id="switchBtn">Don't have an account? Sign up</button>
+                <button type="button" class="btn-text" id="forgotPasswordBtn" style="display: none;">Forgot password?</button>
+            </form>
         </div>
     </div>
 

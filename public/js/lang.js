@@ -148,8 +148,15 @@ function updateLangDisplay() {
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     const btn = document.querySelector('.lang-current');
+    const isExpanded = menu?.classList.contains('show');
+
     menu?.classList.toggle('show');
     btn?.classList.toggle('active');
+
+    // Update ARIA attributes for accessibility
+    if (btn) {
+        btn.setAttribute('aria-expanded', !isExpanded);
+    }
 }
 
 // Переключение языка
