@@ -1573,6 +1573,118 @@ function renderLinksTable(links, containerId) {
                 `).join('')}
             </tbody>
         </table>
+
+        <!-- Mobile Cards (for responsive design) -->
+        <div class="links-mobile-cards">
+            ${links.map(link => {
+                const status = getExpirationStatus(link.expires_at);
+                return `
+                    <div class="link-mobile-card">
+                        <div class="link-mobile-card-header">
+                            <a href="${window.location.origin}/${link.short_code}" target="_blank" class="link-mobile-card-title">
+                                ${window.location.host}/${link.short_code}
+                            </a>
+                            ${link.is_starred ? `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                            ` : ''}
+                        </div>
+                        <div class="link-mobile-card-url">${link.original_url}</div>
+                        ${link.tags && link.tags.length > 0 ? `
+                            <div class="link-tags" style="margin-bottom: 12px;">
+                                ${link.tags.map(tag => `
+                                    <span class="tag-badge" style="--tag-color: ${tag.color}">
+                                        ${tag.name}
+                                        <span class="tag-badge-remove" onclick="handleRemoveTagFromLink(${link.id}, ${tag.id}, event)">×</span>
+                                    </span>
+                                `).join('')}
+                                <button class="tag-badge" style="--tag-color: #cbd5e0" onclick="showAddTagMenu(${link.id}, event)" title="Add tag">
+                                    +
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="link-tags" style="margin-bottom: 12px;">
+                                <button class="tag-badge" style="--tag-color: #cbd5e0" onclick="showAddTagMenu(${link.id}, event)" title="Add tag">
+                                    + Add tag
+                                </button>
+                            </div>
+                        `}
+                        ${status ? `
+                            <div class="expiration-badge ${status.class}" style="margin-bottom: 12px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${status.color}" stroke-width="2" style="margin-right: 4px;">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span style="color: ${status.color}; font-size: 12px; font-weight: 500;">${status.text}</span>
+                            </div>
+                        ` : ''}
+                        ${link.has_password ? `
+                            <div class="password-badge" style="margin-bottom: 12px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" style="margin-right: 4px;">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                                <span style="color: #8b5cf6; font-size: 12px; font-weight: 500;">Password Protected</span>
+                            </div>
+                        ` : ''}
+                        <div class="link-mobile-card-stats">
+                            <div class="link-mobile-card-stat">
+                                <span class="link-mobile-card-stat-label">Clicks</span>
+                                <span class="link-mobile-card-stat-value">${link.clicks}</span>
+                            </div>
+                            <div class="link-mobile-card-stat">
+                                <span class="link-mobile-card-stat-label">Created</span>
+                                <span class="link-mobile-card-stat-value">${new Date(link.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div class="link-mobile-card-actions">
+                            <button class="btn-action btn-star ${link.is_starred ? 'starred' : ''}"
+                                    onclick="toggleStarred(${link.id})"
+                                    title="${link.is_starred ? 'Remove from favorites' : 'Add to favorites'}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="${link.is_starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                            </button>
+                            <button class="btn-action" onclick="copyLink('${link.short_code}', event)" title="Copy">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                            <button class="btn-action" onclick="showQR('${link.short_code}')" title="QR Code">
+                                <span style="font-size: 12px; font-weight: 700;">QR</span>
+                            </button>
+                            <button class="btn-action btn-archive" onclick="toggleArchived(${link.id})" title="${link.is_archived ? 'Restore from archive' : 'Archive link'}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="21 8 21 21 3 21 3 8"/>
+                                    <rect x="1" y="3" width="22" height="5"/>
+                                    <line x1="10" y1="12" x2="14" y2="12"/>
+                                </svg>
+                            </button>
+                            <button class="btn-action btn-expiration" onclick="setLinkExpiration(${link.id})" title="Set expiration date">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                            </button>
+                            <button class="btn-action btn-password ${link.has_password ? 'active' : ''}" onclick="setLinkPassword(${link.id})" title="${link.has_password ? 'Update password protection' : 'Set password protection'}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="${link.has_password ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </button>
+                            <button class="btn-action delete" onclick="deleteLink(${link.id})" title="Delete">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
     `;
 
     if (typeof updatePageLanguage === 'function') {
