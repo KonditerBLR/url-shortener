@@ -2061,6 +2061,7 @@ async function showAnalytics() {
         }
 
         linksListDiv.innerHTML = `
+            <!-- Desktop Table -->
             <div class="links-table">
                 <table>
                     <thead>
@@ -2096,6 +2097,37 @@ async function showAnalytics() {
                         `).join('')}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="links-mobile-cards">
+                ${links.map(link => `
+                    <div class="link-mobile-card">
+                        <div class="link-mobile-card-header">
+                            <div>
+                                <a href="/${link.short_code}" target="_blank" class="link-mobile-card-title">
+                                    /${link.short_code}
+                                </a>
+                                <div class="link-mobile-card-url">${link.original_url.substring(0, 40)}${link.original_url.length > 40 ? '...' : ''}</div>
+                            </div>
+                        </div>
+                        <div class="link-mobile-card-stats">
+                            <div class="link-mobile-card-stat">
+                                <div class="link-mobile-card-stat-label">Clicks</div>
+                                <div class="link-mobile-card-stat-value">${link.clicks || 0}</div>
+                            </div>
+                            <div class="link-mobile-card-stat">
+                                <div class="link-mobile-card-stat-label">Created</div>
+                                <div class="link-mobile-card-stat-value">${new Date(link.created_at).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="link-mobile-card-actions">
+                            <button class="btn-action btn-primary" onclick="viewLinkAnalytics(${link.id}, '${link.short_code}')">
+                                View Analytics
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         `;
 

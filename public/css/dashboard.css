@@ -1047,9 +1047,42 @@ body.dark-theme .btn-reset-qr:hover {
 }
 
 /* Medium screens (769px - 1024px) */
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (min-width: 769px) {
     .stats-cards {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Slightly narrower sidebar for medium tablets */
+    .sidebar {
+        width: 80px;
+    }
+
+    .dashboard-main {
+        margin-left: 80px;
+    }
+
+    .sidebar-header .logo-text,
+    .nav-item span,
+    .btn-logout span {
+        display: none;
+    }
+
+    .nav-item {
+        padding: 12px;
+        justify-content: center;
+    }
+
+    .btn-logout {
+        padding: 12px;
+        justify-content: center;
+    }
+
+    .sidebar-nav {
+        padding: 24px 12px;
+    }
+
+    .sidebar-footer {
+        padding: 12px;
     }
 }
 
@@ -1998,6 +2031,10 @@ body.dark-theme .sort-controls select:focus {
     overflow-x: auto;
 }
 
+.links-list .links-mobile-cards {
+    display: none;
+}
+
 .analytics-details {
     width: 100%;
 }
@@ -2092,20 +2129,13 @@ body.dark-theme .sort-controls select:focus {
         max-height: 180px !important;
     }
 
-    /* Make analytics table scrollable on mobile */
+    /* Hide analytics table on mobile, show cards */
     .links-list .links-table {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        display: none;
     }
 
-    .links-list table {
-        min-width: 500px;
-        font-size: 13px;
-    }
-
-    .links-list th,
-    .links-list td {
-        padding: 10px 8px;
+    .links-list .links-mobile-cards {
+        display: flex;
     }
 }
 
