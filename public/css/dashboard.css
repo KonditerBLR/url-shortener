@@ -2667,6 +2667,19 @@ body.dark-theme .modal-close:hover {
     color: var(--text-dark);
 }
 
+/* Dark theme for error/success messages in modals */
+body.dark-theme .error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+body.dark-theme .success {
+    background: rgba(72, 187, 120, 0.15);
+    border-color: rgba(72, 187, 120, 0.3);
+    color: #9ae6b4;
+}
+
 /* Dark theme for input groups in dashboard */
 body.dark-theme .input-group label {
     color: var(--text-gray);
@@ -2702,4 +2715,102 @@ body.dark-theme .input-group textarea::placeholder {
 
 .tag-selector-item:hover .tag-selector-icon {
     opacity: 1;
+}
+
+/* Tag Creator Section in Tag Selector Modal */
+.tag-creator-section {
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+.tag-creator-divider {
+    text-align: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.tag-creator-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
+.tag-creator-divider span {
+    position: relative;
+    background: var(--bg-white);
+    padding: 0 16px;
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+body.dark-theme .tag-creator-divider span {
+    background: #2d3748;
+}
+
+.tag-creator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-create-quick-tag {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-create-quick-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-toggle-creator {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg-light);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px;
+}
+
+.btn-toggle-creator:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: var(--primary);
+}
+
+.btn-toggle-creator svg {
+    transition: transform 0.3s;
+}
+
+.btn-toggle-creator.active svg {
+    transform: rotate(45deg);
+}
+
+body.dark-theme .btn-toggle-creator {
+    background: #1a202c;
+    border-color: #2d3748;
+}
+
+body.dark-theme .btn-toggle-creator:hover {
+    background: rgba(102, 126, 234, 0.1);
 }

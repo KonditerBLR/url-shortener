@@ -342,6 +342,37 @@
             <div class="tag-selector-list" id="tagSelectorList">
                 <!-- Tags will be dynamically inserted here -->
             </div>
+
+            <!-- Create New Tag Section -->
+            <div class="tag-creator-section" id="tagCreatorSection" style="display: none;">
+                <div class="tag-creator-divider">
+                    <span>or create new</span>
+                </div>
+                <div class="tag-creator-form">
+                    <div class="tag-input-group">
+                        <input type="text"
+                               id="quickTagName"
+                               class="tag-name-input"
+                               placeholder="New tag name..."
+                               maxlength="50">
+                        <input type="color"
+                               id="quickTagColor"
+                               class="tag-color-input"
+                               value="#6366f1">
+                    </div>
+                    <button class="btn-create-quick-tag" onclick="createAndAttachTag()">
+                        Create & Attach
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-toggle-creator" onclick="toggleTagCreator()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span id="toggleCreatorText">Create New Tag</span>
+            </button>
         </div>
     </div>
 
