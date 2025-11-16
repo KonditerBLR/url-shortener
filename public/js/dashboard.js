@@ -1656,6 +1656,73 @@ async function selectTagForLink(tagId) {
 function closeTagSelector() {
     document.getElementById('tagSelectorModal').classList.remove('show');
     currentTagSelectUrlId = null;
+    // Reset creator section
+    const creatorSection = document.getElementById('tagCreatorSection');
+    if (creatorSection) {
+        creatorSection.style.display = 'none';
+    }
+    const toggleBtn = document.querySelector('.btn-toggle-creator');
+    if (toggleBtn) {
+        toggleBtn.classList.remove('active');
+        const toggleText = document.getElementById('toggleCreatorText');
+        if (toggleText) toggleText.textContent = 'Create New Tag';
+    }
+    // Clear inputs
+    const nameInput = document.getElementById('quickTagName');
+    const colorInput = document.getElementById('quickTagColor');
+    if (nameInput) nameInput.value = '';
+    if (colorInput) colorInput.value = '#6366f1';
+}
+
+// Toggle tag creator section in tag selector modal
+function toggleTagCreator() {
+    const creatorSection = document.getElementById('tagCreatorSection');
+    const toggleBtn = document.querySelector('.btn-toggle-creator');
+    const toggleText = document.getElementById('toggleCreatorText');
+
+    if (creatorSection.style.display === 'none') {
+        creatorSection.style.display = 'block';
+        toggleBtn.classList.add('active');
+        toggleText.textContent = 'Cancel';
+        // Focus on name input
+        setTimeout(() => {
+            document.getElementById('quickTagName').focus();
+        }, 100);
+    } else {
+        creatorSection.style.display = 'none';
+        toggleBtn.classList.remove('active');
+        toggleText.textContent = 'Create New Tag';
+    }
+}
+
+// Create new tag and attach to current link
+async function createAndAttachTag() {
+    if (!currentTagSelectUrlId) return;
+
+    const nameInput = document.getElementById('quickTagName');
+    const colorInput = document.getElementById('quickTagColor');
+    const name = nameInput.value.trim();
+    const color = colorInput.value;
+
+    if (!name) {
+        toast.warning('Please enter a tag name');
+        nameInput.focus();
+        return;
+    }
+
+    // Create tag
+    const newTag = await createTag(name, color);
+    if (newTag) {
+        // Add tag to link
+        const success = await addTagToLink(currentTagSelectUrlId, newTag.id);
+        if (success) {
+            toast.success('Tag created and attached to link');
+            closeTagSelector();
+            // Refresh tags and links
+            await loadTags();
+            await showLinks();
+        }
+    }
 }
 
 // Отображение профиля
