@@ -140,6 +140,19 @@
     "analytics": {
       "title": "Analytik",
       "subtitle": "Detaillierte Statistiken für Ihre Links"
-    }
+    },
+    "search_placeholder": "Links durchsuchen...",
+    "sort_by_date": "Nach Datum sortieren",
+    "sort_by_clicks": "Nach Klicks sortieren",
+    "sort_by_name": "Nach Name sortieren",
+    "custom_code_label": "Benutzerdefinierter Code (Optional)",
+    "custom_code_help": "Leer lassen für automatische Generierung",
+    "custom_code_placeholder": "mein-link",
+    "utm_title": "UTM Parameter (Erweitert)",
+    "utm_source": "Quelle",
+    "utm_medium": "Medium",
+    "utm_campaign": "Kampagne",
+    "utm_term": "Begriff (Optional)",
+    "utm_content": "Inhalt (Optional)"
   }
 }
