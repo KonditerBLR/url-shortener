@@ -15,17 +15,17 @@
 
 <body class="dashboard-page">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar-header">
             <div class="logo">
-                <span class="logo-icon">✨</span>
+                <span class="logo-icon" aria-hidden="true">✨</span>
                 <span class="logo-text">CutTo</span>
             </div>
         </div>
 
-        <nav class="sidebar-nav">
-            <a href="#" class="nav-item active" data-page="overview">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <nav class="sidebar-nav" role="menu">
+            <a href="#" class="nav-item active" data-page="overview" role="menuitem" aria-current="page">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7" />
                     <rect x="14" y="3" width="7" height="7" />
                     <rect x="14" y="14" width="7" height="7" />
@@ -33,28 +33,28 @@
                 </svg>
                 <span data-lang="dashboard.nav.overview">Overview</span>
             </a>
-            <a href="#" class="nav-item" data-page="links">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="#" class="nav-item" data-page="links" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
                 <span data-lang="dashboard.nav.links">My Links</span>
             </a>
-            <a href="#" class="nav-item" data-page="analytics">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="#" class="nav-item" data-page="analytics" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M3 3v18h18" />
                     <path d="M18 17l-5-5-4 4-4-4" />
                 </svg>
                 <span data-lang="dashboard.nav.analytics">Analytics</span>
             </a>
-            <a href="#" class="nav-item" data-page="api-keys">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="#" class="nav-item" data-page="api-keys" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
                 </svg>
                 <span>API Keys</span>
             </a>
-            <a href="#" class="nav-item" data-page="webhooks">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="#" class="nav-item" data-page="webhooks" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
                     <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
                     <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
@@ -62,8 +62,8 @@
                 </svg>
                 <span>Webhooks</span>
             </a>
-            <a href="#" class="nav-item" data-page="profile">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="#" class="nav-item" data-page="profile" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                 </svg>
@@ -88,8 +88,12 @@
         <!-- Top Bar -->
         <header class="dashboard-header">
             <div class="header-left">
-                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" style="display: none;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()"
+                        style="display: none;"
+                        aria-label="Toggle navigation menu"
+                        aria-expanded="false"
+                        aria-controls="sidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <line x1="3" y1="12" x2="21" y2="12"/>
                         <line x1="3" y1="6" x2="21" y2="6"/>
                         <line x1="3" y1="18" x2="21" y2="18"/>
@@ -98,8 +102,8 @@
                 <h1 id="pageTitle" data-lang="dashboard.title.overview">Overview</h1>
             </div>
             <div class="header-right">
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
-                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <circle cx="12" cy="12" r="5"/>
                         <line x1="12" y1="1" x2="12" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="23"/>
@@ -110,20 +114,23 @@
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
-                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
                 </button>
 
                 <div class="lang-dropdown">
-                    <button class="lang-current" onclick="toggleLangMenu()">
-                        <span id="currentLangFlag">🇬🇧</span>
+                    <button class="lang-current" onclick="toggleLangMenu()"
+                            aria-label="Select language"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        <span id="currentLangFlag" aria-hidden="true">🇬🇧</span>
                         <span id="currentLangCode">EN</span>
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
                             <path d="M6 8l-4-4h8z" />
                         </svg>
                     </button>
-                    <div class="lang-menu" id="langMenu">
+                    <div class="lang-menu" id="langMenu" role="menu" aria-label="Language options">
                         <!-- Языки генерируются автоматически -->
                     </div>
                 </div>

@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const routes = require('./routes');
 const { router: authRoutes, authenticateToken } = require('./auth');
 const { pool } = require('./db');
@@ -12,14 +13,32 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Rate limiters
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 auth requests per windowMs
+  message: 'Too many authentication attempts, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || true,
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+app.use('/api/', generalLimiter);
 
 // Главная страница
 app.get('/', (req, res) => {
@@ -99,7 +118,7 @@ app.post('/api/user/change-password', authenticateToken, async (req, res) => {
 
 // Routes
 app.use('/api', routes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 // Специальные страницы
 app.get('/reset-password', (req, res) => {

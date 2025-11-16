@@ -8,7 +8,11 @@
     "subtitle": "Create short links, track click statistics, and generate QR codes in seconds",
     "input_placeholder": "Paste your long link here...",
     "button": "Shorten",
-    "hint": "Free, no registration • Create an account for advanced analytics"
+    "hint": "Free, no registration • Create an account for advanced analytics",
+    "error_empty_url": "Please enter a URL",
+    "loading": "Loading...",
+    "error": "Error",
+    "error_connection": "Connection error"
   },
   "result": {
     "label": "Your short link:",
@@ -70,11 +74,14 @@
     "switch_to_register": "Don't have an account? Sign up",
     "switch_to_login": "Already have an account? Login",
     "forgot_password": "Forgot password?",
+    "forgot_password_prompt": "Enter your email",
     "error_empty": "Fill in all fields",
     "error_email": "Enter a valid email",
     "error_password_short": "Password must be at least 8 characters",
     "error_password_format": "Password must contain letters and numbers",
     "error_password_mismatch": "Passwords don't match",
+    "error_connection": "Connection error",
+    "loading": "Loading...",
     "success_registered": "✅ Registration successful!<br>Check your email to verify your account.<br><small style='color: #999;'>This window will close in 5 seconds</small>",
     "success_login": "Login successful!"
   },

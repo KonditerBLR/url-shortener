@@ -1,8 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config(); // Load environment variables FIRST
 
-console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL);
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -11,7 +9,6 @@ const pool = new Pool({
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('❌ Database connection failed:', err.message);
-    console.error('Connection string:', process.env.DATABASE_URL);
   } else {
     console.log('✅ Connected to PostgreSQL database');
     console.log('Server time:', res.rows[0].now);
