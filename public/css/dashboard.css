@@ -1276,6 +1276,85 @@ body.dark-theme .btn-reset-qr:hover {
     .profile-card {
         padding: 24px;
     }
+
+    /* Hide webhooks table on tablet, show cards */
+    .api-keys-table {
+        display: none;
+    }
+
+    .webhooks-mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 0 16px 16px;
+    }
+
+    .webhook-mobile-card {
+        background: var(--bg-white);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    body.dark-theme .webhook-mobile-card {
+        background: #2d3748;
+        border-color: #1a202c;
+    }
+
+    .webhook-mobile-card-header {
+        margin-bottom: 12px;
+    }
+
+    .webhook-mobile-card-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+    }
+
+    .webhook-mobile-card-url {
+        font-size: 12px;
+        color: var(--text-gray);
+        word-break: break-all;
+        line-height: 1.4;
+    }
+
+    .webhook-mobile-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 12px;
+    }
+
+    body.dark-theme .webhook-mobile-card-info {
+        border-color: #1a202c;
+    }
+
+    .webhook-mobile-card-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .webhook-mobile-card-info-label {
+        font-size: 12px;
+        color: var(--text-gray);
+    }
+
+    .webhook-mobile-card-info-value {
+        font-size: 13px;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .webhook-mobile-card-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
 }
 
 /* Mobile (480px and below) */
@@ -2051,6 +2130,10 @@ body.dark-theme .sort-controls select:focus {
 }
 
 .links-list .links-mobile-cards {
+    display: none;
+}
+
+.webhooks-mobile-cards {
     display: none;
 }
 

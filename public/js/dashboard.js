@@ -2829,6 +2829,7 @@ function renderWebhooks(webhooks) {
     }
 
     container.innerHTML = `
+        <!-- Desktop Table -->
         <table class="api-keys-table">
             <thead>
                 <tr>
@@ -2868,6 +2869,48 @@ function renderWebhooks(webhooks) {
                 }).join('')}
             </tbody>
         </table>
+
+        <!-- Mobile Cards -->
+        <div class="webhooks-mobile-cards">
+            ${webhooks.map(webhook => {
+                const lastTriggered = webhook.last_triggered_at
+                    ? new Date(webhook.last_triggered_at).toLocaleDateString()
+                    : 'Never';
+                const statusClass = webhook.is_active ? 'active' : 'inactive';
+                const statusText = webhook.is_active ? 'Active' : 'Inactive';
+
+                return `
+                    <div class="webhook-mobile-card">
+                        <div class="webhook-mobile-card-header">
+                            <div class="webhook-mobile-card-title">${webhook.webhook_name}</div>
+                            <div class="webhook-mobile-card-url">${webhook.endpoint_url}</div>
+                        </div>
+                        <div class="webhook-mobile-card-info">
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Events</span>
+                                <span class="webhook-mobile-card-info-value">${webhook.events.join(', ')}</span>
+                            </div>
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Last Triggered</span>
+                                <span class="webhook-mobile-card-info-value">${lastTriggered}</span>
+                            </div>
+                            <div class="webhook-mobile-card-info-row">
+                                <span class="webhook-mobile-card-info-label">Status</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="webhook-mobile-card-actions">
+                            <button class="btn-secondary btn-sm" onclick="toggleWebhook(${webhook.id})">
+                                ${webhook.is_active ? 'Disable' : 'Enable'}
+                            </button>
+                            <button class="btn-danger btn-sm" onclick="deleteWebhook(${webhook.id}, '${webhook.webhook_name}')">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
     `;
 }
 
