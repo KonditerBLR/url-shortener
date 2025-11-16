@@ -1,5 +1,16 @@
 // ===== DASHBOARD LOGIC =====
 
+// ===== SECURITY: HTML ESCAPING =====
+function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // ===== SKELETON LOADERS =====
 const SkeletonLoader = {
     statsCards: () => `
@@ -1171,8 +1182,8 @@ function renderTagsList() {
 
     container.innerHTML = allTags.map(tag => `
         <div class="tag-item">
-            <div class="tag-item-color" style="background-color: ${tag.color}"></div>
-            <div class="tag-item-name">${tag.name}</div>
+            <div class="tag-item-color" style="background-color: ${escapeHtml(tag.color)}"></div>
+            <div class="tag-item-name">${escapeHtml(tag.name)}</div>
             <div class="tag-item-count">${tagCounts[tag.id] || 0} links</div>
             <button class="btn-delete-tag" onclick="handleDeleteTag(${tag.id})" title="Delete tag">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1361,8 +1372,8 @@ function renderTagFilters() {
             ${allTags.map(tag => `
                 <button class="tag-filter ${selectedTagFilter === tag.id ? 'active' : ''}"
                         onclick="filterByTag(${tag.id})"
-                        style="--tag-color: ${tag.color}">
-                    ${tag.name}
+                        style="--tag-color: ${escapeHtml(tag.color)}">
+                    ${escapeHtml(tag.name)}
                 </button>
             `).join('')}
         </div>
@@ -1475,19 +1486,19 @@ function renderLinksTable(links, containerId) {
                             </td>
                         ` : ''}
                         <td>
-                            <a href="${window.location.origin}/${link.short_code}" target="_blank" class="link-short">
-                                ${window.location.host}/${link.short_code}
+                            <a href="${window.location.origin}/${escapeHtml(link.short_code)}" target="_blank" class="link-short">
+                                ${window.location.host}/${escapeHtml(link.short_code)}
                             </a>
                         </td>
                         <td>
-                            <div class="link-original" title="${link.original_url}">
-                                ${link.original_url}
+                            <div class="link-original" title="${escapeHtml(link.original_url)}">
+                                ${escapeHtml(link.original_url)}
                             </div>
                             ${link.tags && link.tags.length > 0 ? `
                                 <div class="link-tags">
                                     ${link.tags.map(tag => `
-                                        <span class="tag-badge" style="--tag-color: ${tag.color}">
-                                            ${tag.name}
+                                        <span class="tag-badge" style="--tag-color: ${escapeHtml(tag.color)}">
+                                            ${escapeHtml(tag.name)}
                                             <span class="tag-badge-remove" onclick="handleRemoveTagFromLink(${link.id}, ${tag.id}, event)">×</span>
                                         </span>
                                     `).join('')}
@@ -1502,10 +1513,10 @@ function renderLinksTable(links, containerId) {
                                     </button>
                                 </div>
                             `}
-                            <div class="link-description" id="desc-${link.id}" data-description="${link.description || ''}">
+                            <div class="link-description" id="desc-${link.id}" data-description="${escapeHtml(link.description || '')}">
                                 ${link.description ? `
                                     <div class="description-display" onclick="showEditDescription(${link.id})">
-                                        <span class="description-text">${link.description}</span>
+                                        <span class="description-text">${escapeHtml(link.description)}</span>
                                         <svg class="description-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -1601,8 +1612,8 @@ function renderLinksTable(links, containerId) {
                 return `
                     <div class="link-mobile-card">
                         <div class="link-mobile-card-header">
-                            <a href="${window.location.origin}/${link.short_code}" target="_blank" class="link-mobile-card-title">
-                                ${window.location.host}/${link.short_code}
+                            <a href="${window.location.origin}/${escapeHtml(link.short_code)}" target="_blank" class="link-mobile-card-title">
+                                ${window.location.host}/${escapeHtml(link.short_code)}
                             </a>
                             ${link.is_starred ? `
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
@@ -1610,12 +1621,12 @@ function renderLinksTable(links, containerId) {
                                 </svg>
                             ` : ''}
                         </div>
-                        <div class="link-mobile-card-url">${link.original_url}</div>
+                        <div class="link-mobile-card-url">${escapeHtml(link.original_url)}</div>
                         ${link.tags && link.tags.length > 0 ? `
                             <div class="link-tags" style="margin-bottom: 12px;">
                                 ${link.tags.map(tag => `
-                                    <span class="tag-badge" style="--tag-color: ${tag.color}">
-                                        ${tag.name}
+                                    <span class="tag-badge" style="--tag-color: ${escapeHtml(tag.color)}">
+                                        ${escapeHtml(tag.name)}
                                         <span class="tag-badge-remove" onclick="handleRemoveTagFromLink(${link.id}, ${tag.id}, event)">×</span>
                                     </span>
                                 `).join('')}
@@ -1751,9 +1762,9 @@ async function showAddTagMenu(urlId, event) {
     if (currentTags.length > 0) {
         html += '<div style="margin-bottom: 20px;"><h4 style="font-size: 14px; color: var(--text-gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Current Tags (${currentTags.length}/${MAX_TAGS})</h4>';
         html += currentTags.map(tag => `
-            <div class="tag-selector-item" onclick="removeTagFromLinkInModal(${tag.id})" style="border-color: ${tag.color};">
-                <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
-                <div class="tag-selector-name">${tag.name}</div>
+            <div class="tag-selector-item" onclick="removeTagFromLinkInModal(${tag.id})" style="border-color: ${escapeHtml(tag.color)};">
+                <div class="tag-selector-color" style="background-color: ${escapeHtml(tag.color)}"></div>
+                <div class="tag-selector-name">${escapeHtml(tag.name)}</div>
                 <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1771,8 +1782,8 @@ async function showAddTagMenu(urlId, event) {
             html += '<div><h4 style="font-size: 14px; color: var(--text-gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Available Tags</h4>';
             html += availableTags.map(tag => `
                 <div class="tag-selector-item" onclick="selectTagForLink(${tag.id})">
-                    <div class="tag-selector-color" style="background-color: ${tag.color}"></div>
-                    <div class="tag-selector-name">${tag.name}</div>
+                    <div class="tag-selector-color" style="background-color: ${escapeHtml(tag.color)}"></div>
+                    <div class="tag-selector-name">${escapeHtml(tag.name)}</div>
                     <svg class="tag-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
