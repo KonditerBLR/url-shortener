@@ -926,13 +926,18 @@ body.dark-theme .footer {
 }
 
 .modal-overlay {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
 }
 
 .modal-content {
@@ -1539,13 +1544,19 @@ body.dark-theme .modal-content {
         font-size: 13px;
     }
 
+    .modal-overlay {
+        padding: 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
     .modal-content {
         max-width: 95vw;
         width: 95vw;
         padding: 24px 16px;
         margin: 10px auto;
         border-radius: 16px;
-        max-height: 85vh;
+        max-height: none;
     }
 
     .modal-large {

@@ -1089,7 +1089,7 @@ body.dark-theme .btn-reset-qr:hover {
 /* Tablet and below (768px) */
 @media (max-width: 768px) {
     .sidebar {
-        width: 60px;
+        width: 70px;
     }
 
     .sidebar-header .logo-text,
@@ -1099,7 +1099,26 @@ body.dark-theme .btn-reset-qr:hover {
     }
 
     .dashboard-main {
-        margin-left: 60px;
+        margin-left: 70px;
+    }
+
+    /* Center icons in sidebar */
+    .nav-item {
+        padding: 14px;
+        justify-content: center;
+    }
+
+    .btn-logout {
+        padding: 14px;
+        justify-content: center;
+    }
+
+    .sidebar-nav {
+        padding: 24px 8px;
+    }
+
+    .sidebar-footer {
+        padding: 8px;
     }
 
     .dashboard-header {
@@ -2112,8 +2131,25 @@ body.dark-theme .sort-controls select:focus {
         gap: 12px;
     }
 
+    /* Prevent analytics details from overflowing */
+    .analytics-details {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .analytics-details h3 {
+        font-size: 16px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
     .chart-card {
         padding: 14px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
     }
 
     .chart-card h4 {
@@ -2123,6 +2159,12 @@ body.dark-theme .sort-controls select:focus {
 
     .chart-full canvas {
         max-height: 200px !important;
+    }
+
+    .analytics-charts-grid {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .analytics-charts-grid canvas {
