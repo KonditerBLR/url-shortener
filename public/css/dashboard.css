@@ -2135,16 +2135,9 @@ body.dark-theme .link-item:hover {
     background: rgba(102, 126, 234, 0.05);
 }
 
-body.dark-theme .btn-icon {
-    color: var(--text-gray);
-}
-
-body.dark-theme .btn-icon:hover {
-    background: rgba(102, 126, 234, 0.1);
-}
-
 body.dark-theme .btn-icon.delete:hover {
     background: rgba(245, 101, 101, 0.1);
+    color: var(--error);
 }
 
 body.dark-theme .form-group input,
@@ -3179,6 +3172,149 @@ body.dark-theme .tag-filter.active {
 
 body.dark-theme .tag-filter:hover:not(.active) {
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== DARK THEME FOR API DOCS ===== */
+body.dark-theme .api-docs {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+body.dark-theme .api-docs h3,
+body.dark-theme .api-docs h4 {
+    color: var(--text-dark);
+}
+
+body.dark-theme .api-docs > div {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .api-docs code {
+    background: rgba(0, 0, 0, 0.2);
+    color: #a0aec0;
+}
+
+body.dark-theme .api-docs p {
+    color: var(--text-gray);
+}
+
+/* ===== DARK THEME FOR BTN-ICON (SORT BUTTON) ===== */
+body.dark-theme .btn-icon {
+    background: #2d3748;
+    border-color: #1a202c;
+    color: var(--text-gray);
+}
+
+body.dark-theme .btn-icon:hover {
+    background: #1a202c;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ===== DARK THEME FOR ADD TAG BUTTON ===== */
+body.dark-theme .btn-add-tag {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+}
+
+/* ===== DARK THEME FOR TAG COLOR INPUT ===== */
+body.dark-theme .tag-color-input {
+    border-color: #2d3748;
+    background: #2d3748;
+}
+
+/* ===== API KEY DISPLAY STYLES ===== */
+.api-key-warning-box {
+    margin: 24px 0;
+    padding: 20px;
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+}
+
+body.dark-theme .api-key-warning-box {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.api-key-warning-text {
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+body.dark-theme .api-key-warning-text {
+    color: #fbbf24;
+}
+
+.api-key-display {
+    background: white;
+    padding: 16px;
+    border-radius: 4px;
+    font-family: monospace;
+    word-break: break-all;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+body.dark-theme .api-key-display {
+    background: #1a202c;
+    color: #e2e8f0;
+    border: 1px solid #2d3748;
+}
+
+.api-key-info-box {
+    padding: 16px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+body.dark-theme .api-key-info-box {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== WEBHOOKS SECTION STYLES ===== */
+.webhooks-section {
+    width: 100%;
+    max-width: 100%;
+}
+
+body.dark-theme .webhooks-section {
+    background: transparent;
+}
+
+body.dark-theme .webhooks-section .section-header {
+    background: transparent;
+}
+
+body.dark-theme .webhooks-section .section-header h2,
+body.dark-theme .webhooks-section .section-header p {
+    color: var(--text-dark);
+}
+
+body.dark-theme .webhooks-section .api-keys-table {
+    background: #2d3748;
+    border-color: #1a202c;
+}
+
+/* ===== API KEYS SECTION STYLES ===== */
+.api-keys-section {
+    width: 100%;
+    max-width: 100%;
+}
+
+body.dark-theme .api-keys-section {
+    background: transparent;
+}
+
+body.dark-theme .api-keys-section .section-header {
+    background: transparent;
+}
+
+body.dark-theme .api-keys-section .section-header h2,
+body.dark-theme .api-keys-section .section-header p {
+    color: var(--text-dark);
 }
 
 /* Dark theme for modals in dashboard */

@@ -2658,16 +2658,16 @@ async function createApiKey() {
         keyModal.innerHTML = `
             <div class="modal-content dashboard-modal modal-wide">
                 <h3 style="color: #10b981;">✓ API Key Created Successfully!</h3>
-                <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
-                    <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this API key now. You won't be able to see it again!</p>
-                    <div style="background: white; padding: 16px; border-radius: 4px; font-family: monospace; word-break: break-all; font-size: 14px;">
+                <div class="api-key-warning-box">
+                    <p class="api-key-warning-text">⚠️ Save this API key now. You won't be able to see it again!</p>
+                    <div class="api-key-display">
                         ${data.apiKey}
                     </div>
                     <button class="btn-secondary" onclick="navigator.clipboard.writeText('${data.apiKey}'); toast.success('API key copied to clipboard')" style="margin-top: 12px; width: 100%;">
                         Copy to Clipboard
                     </button>
                 </div>
-                <div style="padding: 16px; background: var(--card-bg); border-radius: 8px; margin-bottom: 20px;">
+                <div class="api-key-info-box">
                     <p style="margin: 0; color: var(--text-gray); font-size: 14px;">
                         <strong>Name:</strong> ${data.key_name}<br>
                         <strong>Prefix:</strong> <code>${data.key_prefix}...</code><br>
