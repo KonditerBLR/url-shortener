@@ -424,7 +424,7 @@ async function setLinkPassword(urlId) {
 
     // Create modal for password settings
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 400px;">
             <h3>${link.has_password ? '🔒 Update Password' : '🔓 Set Password Protection'}</h3>
@@ -546,7 +546,7 @@ async function setLinkExpiration(urlId) {
     const currentExpiration = link.expires_at ? new Date(link.expires_at).toISOString().slice(0, 16) : '';
 
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 400px;">
             <h3>Set Link Expiration</h3>
@@ -2593,7 +2593,7 @@ function renderApiKeys(apiKeys) {
 
 function showCreateApiKeyModal() {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <h3>Create New API Key</h3>
@@ -2654,7 +2654,7 @@ async function createApiKey() {
 
         // Show the API key in a new modal (only shown once!)
         const keyModal = document.createElement('div');
-        keyModal.className = 'modal-overlay';
+        keyModal.className = 'modal-overlay standalone';
         keyModal.innerHTML = `
             <div class="modal-content" style="max-width: 600px;">
                 <h3 style="color: #10b981;">✓ API Key Created Successfully!</h3>
@@ -2873,7 +2873,7 @@ function renderWebhooks(webhooks) {
 
 function showCreateWebhookModal() {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <h3>Create New Webhook</h3>
@@ -2955,7 +2955,7 @@ async function createWebhook() {
 
         // Show secret key
         const secretModal = document.createElement('div');
-        secretModal.className = 'modal-overlay';
+        secretModal.className = 'modal-overlay standalone';
         secretModal.innerHTML = `
             <div class="modal-content" style="max-width: 600px;">
                 <h3 style="color: #10b981;">✓ Webhook Created Successfully!</h3>

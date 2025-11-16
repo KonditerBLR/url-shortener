@@ -926,13 +926,18 @@ body.dark-theme .footer {
 }
 
 .modal-overlay {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
+}
+
+/* Standalone modal overlay (for dynamically created modals like API Keys) */
+.modal-overlay.standalone {
+    position: fixed;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -952,6 +957,7 @@ body.dark-theme .footer {
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
     animation: modalSlide 0.3s ease;
     transition: background 0.3s ease;
+    z-index: 1001;
 }
 
 body.dark-theme .modal-content {
@@ -1544,7 +1550,7 @@ body.dark-theme .modal-content {
         font-size: 13px;
     }
 
-    .modal-overlay {
+    .modal-overlay.standalone {
         padding: 10px;
         align-items: flex-start;
         overflow-y: auto;
