@@ -970,6 +970,10 @@ body.dark-theme .modal-content {
     width: 90vw;
 }
 
+.modal-content.dashboard-modal.modal-wide {
+    max-width: 600px;
+}
+
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -1318,7 +1322,8 @@ body.dark-theme .modal-content {
         gap: 12px;
     }
 
-    .modal-content.dashboard-modal {
+    .modal-content.dashboard-modal,
+    .modal-content.dashboard-modal.modal-wide {
         max-width: 90vw;
         width: 90vw;
         padding: 24px 20px;
@@ -1600,7 +1605,8 @@ body.dark-theme .modal-content {
         max-height: none;
     }
 
-    .modal-content.dashboard-modal {
+    .modal-content.dashboard-modal,
+    .modal-content.dashboard-modal.modal-wide {
         max-width: 95vw !important;
         width: 95vw;
         padding: 20px 16px;
@@ -1616,7 +1622,8 @@ body.dark-theme .modal-content {
     }
 
     .modal-actions .btn-primary,
-    .modal-actions .btn-secondary {
+    .modal-actions .btn-secondary,
+    .modal-actions .btn-danger {
         width: 100%;
         justify-content: center;
     }

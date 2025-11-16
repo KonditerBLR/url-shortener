@@ -426,7 +426,7 @@ async function setLinkPassword(urlId) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content dashboard-modal">
             <h3>${link.has_password ? '🔒 Update Password' : '🔓 Set Password Protection'}</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="linkPassword">Password:</label>
@@ -434,7 +434,7 @@ async function setLinkPassword(urlId) {
                 <input type="password" id="linkPasswordConfirm" class="form-control" placeholder="Confirm password" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove password protection</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="saveLinkPassword(${urlId})">Save</button>
                 ${link.has_password ? `<button class="btn-danger" onclick="removeLinkPassword(${urlId})">Remove Password</button>` : ''}
@@ -548,14 +548,14 @@ async function setLinkExpiration(urlId) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content dashboard-modal">
             <h3>Set Link Expiration</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="expirationDate">Expiration Date & Time:</label>
                 <input type="datetime-local" id="expirationDate" class="form-control" value="${currentExpiration}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Leave empty to remove expiration</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="saveExpiration(${urlId})">Save</button>
                 ${currentExpiration ? `<button class="btn-danger" onclick="removeExpiration(${urlId})">Remove</button>` : ''}
@@ -2656,7 +2656,7 @@ async function createApiKey() {
         const keyModal = document.createElement('div');
         keyModal.className = 'modal-overlay standalone';
         keyModal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-content dashboard-modal modal-wide">
                 <h3 style="color: #10b981;">✓ API Key Created Successfully!</h3>
                 <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
                     <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this API key now. You won't be able to see it again!</p>
@@ -2957,7 +2957,7 @@ async function createWebhook() {
         const secretModal = document.createElement('div');
         secretModal.className = 'modal-overlay standalone';
         secretModal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-content dashboard-modal modal-wide">
                 <h3 style="color: #10b981;">✓ Webhook Created Successfully!</h3>
                 <div style="margin: 24px 0; padding: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
                     <p style="color: #92400e; font-weight: 600; margin-bottom: 12px;">⚠️ Save this secret key for signature verification!</p>
