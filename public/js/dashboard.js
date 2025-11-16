@@ -2726,9 +2726,11 @@ async function showWebhooks() {
     content.innerHTML = `
         <div class="webhooks-section">
             <div class="section-header">
-                <h2 class="section-title">Webhooks</h2>
-                <p>Receive real-time notifications when events occur</p>
-                <button class="btn-primary" onclick="showCreateWebhookModal()" style="margin-top: 20px;">
+                <div>
+                    <h2 class="section-title">Webhooks</h2>
+                    <p style="color: var(--text-gray); margin-top: 4px; font-size: 14px;">Receive real-time notifications when events occur</p>
+                </div>
+                <button class="btn-primary" onclick="showCreateWebhookModal()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
@@ -2928,14 +2930,14 @@ function showCreateWebhookModal() {
                 <input type="url" id="webhookUrl" class="form-control" placeholder="https://your-server.com/webhook" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 16px;">
 
                 <label>Events to Subscribe:</label>
-                <div style="margin: 10px 0;">
-                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <input type="checkbox" value="link.clicked" checked style="margin-right: 8px;">
-                        <span style="font-size: 14px;">link.clicked - When someone clicks your link</span>
+                <div class="webhook-events-list">
+                    <label class="webhook-event-item">
+                        <input type="checkbox" value="link.clicked" checked>
+                        <span class="webhook-event-text">link.clicked - When someone clicks your link</span>
                     </label>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" value="link.created" style="margin-right: 8px;">
-                        <span style="font-size: 14px;">link.created - When you create a new link</span>
+                    <label class="webhook-event-item">
+                        <input type="checkbox" value="link.created">
+                        <span class="webhook-event-text">link.created - When you create a new link</span>
                     </label>
                 </div>
             </div>
