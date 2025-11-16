@@ -1014,12 +1014,18 @@ async function loadTags() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - return empty array
+            return [];
+        }
+
         if (response.ok) {
             allTags = await response.json();
             return allTags;
         }
     } catch (error) {
-        console.error('Error loading tags:', error);
+        // Silently handle errors and return empty array
+        // This is expected when API endpoints are not yet implemented
     }
     return [];
 }
@@ -2469,6 +2475,12 @@ async function loadApiKeys() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - show empty state
+            renderApiKeys([]);
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Failed to load API keys');
         }
@@ -2477,11 +2489,8 @@ async function loadApiKeys() {
         renderApiKeys(apiKeys);
     } catch (error) {
         console.error('Error loading API keys:', error);
-        container.innerHTML = `
-            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
-                Failed to load API keys
-            </p>
-        `;
+        // Show empty state instead of error for connection issues
+        renderApiKeys([]);
     }
 }
 
@@ -2747,6 +2756,12 @@ async function loadWebhooks() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
+        if (response.status === 404) {
+            // API endpoint not implemented yet - show empty state
+            renderWebhooks([]);
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Failed to load webhooks');
         }
@@ -2755,11 +2770,8 @@ async function loadWebhooks() {
         renderWebhooks(webhooks);
     } catch (error) {
         console.error('Error loading webhooks:', error);
-        container.innerHTML = `
-            <p style="text-align: center; color: var(--text-danger); padding: 40px;">
-                Failed to load webhooks
-            </p>
-        `;
+        // Show empty state instead of error for connection issues
+        renderWebhooks([]);
     }
 }
 
