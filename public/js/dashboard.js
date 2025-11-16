@@ -2376,17 +2376,29 @@ function createAnalyticsCharts(stats) {
 function toggleMobileSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
 
-    sidebar.classList.toggle('mobile-open');
+    const isOpen = sidebar.classList.toggle('mobile-open');
     overlay.classList.toggle('active');
+
+    // Update ARIA attributes for accessibility
+    if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', isOpen);
+    }
 }
 
 function closeMobileSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
 
     sidebar.classList.remove('mobile-open');
     overlay.classList.remove('active');
+
+    // Update ARIA attributes
+    if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'false');
+    }
 }
 
 // Show mobile menu button on small screens
@@ -3001,8 +3013,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Close all modals when switching sections
             closeAllModals();
 
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            // Update active state and ARIA attributes
+            document.querySelectorAll('.nav-item').forEach(i => {
+                i.classList.remove('active');
+                i.removeAttribute('aria-current');
+            });
             item.classList.add('active');
+            item.setAttribute('aria-current', 'page');
 
             const page = item.getAttribute('data-page');
 
@@ -3040,6 +3057,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update mobile menu on resize
     window.addEventListener('resize', updateMobileMenu);
+
+    // Keyboard navigation - ESC to close mobile sidebar
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar?.classList.contains('mobile-open')) {
+                closeMobileSidebar();
+            }
+        }
+    });
 });
 
 // Модалка создания ссылки
