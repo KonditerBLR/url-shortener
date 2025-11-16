@@ -213,15 +213,17 @@ body.dark-theme .mobile-menu-btn {
 
 .stat-card-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 16px;
+    gap: 12px;
 }
 
 .stat-card-title {
     font-size: 14px;
     color: var(--text-gray);
     font-weight: 500;
+    flex: 1;
 }
 
 .stat-card-icon {
@@ -233,6 +235,7 @@ body.dark-theme .mobile-menu-btn {
     align-items: center;
     justify-content: center;
     color: var(--primary);
+    flex-shrink: 0;
 }
 
 .stat-card-value {
@@ -1237,7 +1240,10 @@ body.dark-theme .btn-reset-qr:hover {
         margin-left: 0;
     }
 
-    /* Mobile menu button shown via JavaScript */
+    /* Mobile menu button - show on mobile */
+    .mobile-menu-btn {
+        display: flex !important;
+    }
 
     /* Mobile overlay */
     .sidebar-overlay {
@@ -1282,10 +1288,13 @@ body.dark-theme .btn-reset-qr:hover {
         grid-template-columns: 1fr;
         gap: 10px;
         margin-bottom: 16px;
+        width: 100%;
     }
 
     .stat-card {
         padding: 14px 12px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .stat-card-value {
