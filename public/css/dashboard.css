@@ -206,7 +206,7 @@ body.dark-theme .mobile-menu-btn {
     transition: all 0.3s;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
 }
 
@@ -218,7 +218,7 @@ body.dark-theme .mobile-menu-btn {
 .stat-card-header {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
     width: 100%;
 }
@@ -227,6 +227,7 @@ body.dark-theme .mobile-menu-btn {
     font-size: 14px;
     color: var(--text-gray);
     font-weight: 500;
+    text-align: center;
 }
 
 .stat-card-icon {
@@ -246,11 +247,13 @@ body.dark-theme .mobile-menu-btn {
     font-weight: 700;
     color: var(--text-dark);
     line-height: 1;
+    text-align: center;
 }
 
 .stat-card-change {
     font-size: 14px;
     color: var(--success);
+    text-align: center;
 }
 
 .stat-card-change.negative {
