@@ -2743,18 +2743,18 @@ async function showWebhooks() {
                 <p style="text-align: center; color: var(--text-gray); padding: 40px;">Loading...</p>
             </div>
 
-            <div class="webhook-docs" style="margin-top: 40px; padding: 24px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
-                <h3 style="margin-bottom: 16px;">Webhook Events</h3>
-                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <h4 style="margin-bottom: 8px;">Available Events:</h4>
-                    <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-dark);">
+            <div class="webhook-docs">
+                <h3 class="webhook-docs-title">Webhook Events</h3>
+                <div class="webhook-docs-section">
+                    <h4 class="webhook-docs-subtitle">Available Events:</h4>
+                    <ul class="webhook-docs-list">
                         <li><code>link.clicked</code> - Triggered when someone clicks your short link</li>
                         <li><code>link.created</code> - Triggered when you create a new short link</li>
                     </ul>
                 </div>
-                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
-                    <h4 style="margin-bottom: 8px;">Payload Example:</h4>
-                    <pre style="background: #fff; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px;"><code>{
+                <div class="webhook-docs-section">
+                    <h4 class="webhook-docs-subtitle">Payload Example:</h4>
+                    <pre class="webhook-docs-code"><code>{
   "event": "link.clicked",
   "timestamp": "2024-01-15T10:30:00Z",
   "data": {
@@ -2767,7 +2767,7 @@ async function showWebhooks() {
   }
 }</code></pre>
                 </div>
-                <p style="color: var(--text-gray); font-size: 14px; margin-top: 16px;">
+                <p class="webhook-docs-note">
                     Webhooks include an <code>X-Webhook-Signature</code> header for security verification using HMAC SHA-256.
                 </p>
             </div>
@@ -3125,10 +3125,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('pageTitle').setAttribute('data-lang', 'dashboard.title.profile');
                 showProfile();
             } else if (page === 'api-keys') {
-                document.getElementById('pageTitle').textContent = 'API Keys';
+                const pageTitle = document.getElementById('pageTitle');
+                pageTitle.removeAttribute('data-lang');
+                pageTitle.textContent = 'API Keys';
                 showApiKeys();
             } else if (page === 'webhooks') {
-                document.getElementById('pageTitle').textContent = 'Webhooks';
+                const pageTitle = document.getElementById('pageTitle');
+                pageTitle.removeAttribute('data-lang');
+                pageTitle.textContent = 'Webhooks';
                 showWebhooks();
             }
 
