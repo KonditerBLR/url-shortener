@@ -1987,6 +1987,10 @@ function showProfile() {
 // Analytics Page
 async function showAnalytics() {
     const content = document.getElementById('dashboardContent');
+    if (!content) {
+        console.error('Dashboard content container not found');
+        return;
+    }
 
     content.innerHTML = `
         <div class="analytics-section">
@@ -2025,6 +2029,10 @@ async function showAnalytics() {
         const links = await response.json();
 
         const linksListDiv = document.getElementById('analyticsLinksList');
+        if (!linksListDiv) {
+            console.error('Analytics links list container not found');
+            return;
+        }
 
         if (!Array.isArray(links) || links.length === 0) {
             linksListDiv.innerHTML = `
@@ -2076,11 +2084,14 @@ async function showAnalytics() {
 
     } catch (error) {
         console.error('Error loading analytics:', error);
-        document.getElementById('analyticsLinksList').innerHTML = `
-            <div class="error-state">
-                <p>Error loading links. Please try again.</p>
-            </div>
-        `;
+        const linksListDiv = document.getElementById('analyticsLinksList');
+        if (linksListDiv) {
+            linksListDiv.innerHTML = `
+                <div class="error-state">
+                    <p>Error loading links. Please try again.</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -2095,6 +2106,12 @@ let currentAnalyticsPeriod = 'all';
 async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
     const detailsDiv = document.getElementById('analyticsDetails');
     const dataDiv = document.getElementById('analyticsData');
+    const titleDiv = document.getElementById('analyticsLinkTitle');
+
+    if (!detailsDiv || !dataDiv || !titleDiv) {
+        console.error('Analytics elements not found');
+        return;
+    }
 
     // Store current link and period
     currentAnalyticsLink = { id: linkId, code: shortCode };
@@ -2105,7 +2122,7 @@ async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
     analyticsCharts = {};
 
     detailsDiv.style.display = 'block';
-    document.getElementById('analyticsLinkTitle').innerHTML = `
+    titleDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             <span>Statistics for: ${shortCode}</span>
             <div class="time-filter">
@@ -2119,7 +2136,7 @@ async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
     dataDiv.innerHTML = `
         ${SkeletonLoader.statsCards()}
         ${SkeletonLoader.chart()}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; margin-top: 24px;">
             ${SkeletonLoader.chart()}
             ${SkeletonLoader.chart()}
         </div>
@@ -2129,6 +2146,10 @@ async function viewLinkAnalytics(linkId, shortCode, period = 'all') {
         const response = await fetch(`/api/urls/${linkId}/stats?period=${period}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to load analytics');
+        }
 
         const stats = await response.json();
 
@@ -2413,6 +2434,12 @@ Body: { "url": "https://example.com", "customCode": "optional", "password": "opt
 }
 
 async function loadApiKeys() {
+    const container = document.getElementById('apiKeysList');
+    if (!container) {
+        console.error('API Keys list container not found');
+        return;
+    }
+
     try {
         const token = localStorage.getItem('token');
         const response = await fetch('/api/api-keys', {
@@ -2427,7 +2454,7 @@ async function loadApiKeys() {
         renderApiKeys(apiKeys);
     } catch (error) {
         console.error('Error loading API keys:', error);
-        document.getElementById('apiKeysList').innerHTML = `
+        container.innerHTML = `
             <p style="text-align: center; color: var(--text-danger); padding: 40px;">
                 Failed to load API keys
             </p>
@@ -2437,6 +2464,10 @@ async function loadApiKeys() {
 
 function renderApiKeys(apiKeys) {
     const container = document.getElementById('apiKeysList');
+    if (!container) {
+        console.error('API Keys list container not found');
+        return;
+    }
 
     if (apiKeys.length === 0) {
         container.innerHTML = `
@@ -2681,6 +2712,12 @@ async function showWebhooks() {
 }
 
 async function loadWebhooks() {
+    const container = document.getElementById('webhooksList');
+    if (!container) {
+        console.error('Webhooks list container not found');
+        return;
+    }
+
     try {
         const token = localStorage.getItem('token');
         const response = await fetch('/api/webhooks', {
@@ -2695,7 +2732,7 @@ async function loadWebhooks() {
         renderWebhooks(webhooks);
     } catch (error) {
         console.error('Error loading webhooks:', error);
-        document.getElementById('webhooksList').innerHTML = `
+        container.innerHTML = `
             <p style="text-align: center; color: var(--text-danger); padding: 40px;">
                 Failed to load webhooks
             </p>
@@ -2705,6 +2742,10 @@ async function loadWebhooks() {
 
 function renderWebhooks(webhooks) {
     const container = document.getElementById('webhooksList');
+    if (!container) {
+        console.error('Webhooks list container not found');
+        return;
+    }
 
     if (webhooks.length === 0) {
         container.innerHTML = `
