@@ -204,16 +204,10 @@ body.dark-theme .mobile-menu-btn {
     padding: 24px;
     border: 1px solid var(--border);
     transition: all 0.3s;
-    display: grid;
-    grid-template-columns: minmax(80px, 1fr) 40px;
-    grid-template-rows: auto 1fr auto;
-    column-gap: 16px;
-    row-gap: 12px;
-    grid-template-areas:
-        "title icon"
-        "value value"
-        "change change";
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .stat-card:hover {
@@ -222,19 +216,20 @@ body.dark-theme .mobile-menu-btn {
 }
 
 .stat-card-header {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
 }
 
 .stat-card-title {
-    grid-area: title;
     font-size: 14px;
     color: var(--text-gray);
     font-weight: 500;
-    align-self: center;
 }
 
 .stat-card-icon {
-    grid-area: icon;
     width: 40px;
     height: 40px;
     border-radius: 12px;
@@ -247,14 +242,13 @@ body.dark-theme .mobile-menu-btn {
 }
 
 .stat-card-value {
-    grid-area: value;
     font-size: 32px;
     font-weight: 700;
     color: var(--text-dark);
+    line-height: 1;
 }
 
 .stat-card-change {
-    grid-area: change;
     font-size: 14px;
     color: var(--success);
 }
@@ -1110,9 +1104,11 @@ body.dark-theme .btn-reset-qr:hover {
 
     .stat-card {
         padding: 16px;
-        grid-template-columns: minmax(70px, 1fr) 32px;
-        column-gap: 14px;
-        row-gap: 10px;
+        gap: 10px;
+    }
+
+    .stat-card-header {
+        gap: 10px;
     }
 
     .stat-card-value {
@@ -1307,9 +1303,11 @@ body.dark-theme .btn-reset-qr:hover {
         padding: 14px 12px;
         width: 100%;
         box-sizing: border-box;
-        grid-template-columns: minmax(60px, 1fr) 28px;
-        column-gap: 12px;
-        row-gap: 8px;
+        gap: 8px;
+    }
+
+    .stat-card-header {
+        gap: 8px;
     }
 
     .stat-card-value {
@@ -1716,9 +1714,11 @@ body.dark-theme .btn-reset-qr:hover {
         padding: 14px 12px;
         width: 100%;
         box-sizing: border-box;
-        grid-template-columns: minmax(50px, 1fr) 26px;
-        column-gap: 10px;
-        row-gap: 6px;
+        gap: 6px;
+    }
+
+    .stat-card-header {
+        gap: 6px;
     }
 
     .stat-card-value {
