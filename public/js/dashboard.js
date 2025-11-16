@@ -2595,7 +2595,7 @@ function showCreateApiKeyModal() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content dashboard-modal">
             <h3>Create New API Key</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="apiKeyName">API Key Name:</label>
@@ -2605,7 +2605,7 @@ function showCreateApiKeyModal() {
                 <input type="number" id="apiKeyExpires" class="form-control" placeholder="Leave empty for no expiration" min="1" max="365" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
                 <small style="color: var(--text-gray); display: block; margin-top: 5px;">Optional. Leave empty for API key that never expires.</small>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="createApiKey()">Create API Key</button>
             </div>
@@ -2875,7 +2875,7 @@ function showCreateWebhookModal() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay standalone';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content dashboard-modal">
             <h3>Create New Webhook</h3>
             <div class="form-group" style="margin: 20px 0;">
                 <label for="webhookName">Webhook Name:</label>
@@ -2888,15 +2888,15 @@ function showCreateWebhookModal() {
                 <div style="margin: 10px 0;">
                     <label style="display: flex; align-items: center; margin-bottom: 8px;">
                         <input type="checkbox" value="link.clicked" checked style="margin-right: 8px;">
-                        <span>link.clicked - When someone clicks your link</span>
+                        <span style="font-size: 14px;">link.clicked - When someone clicks your link</span>
                     </label>
                     <label style="display: flex; align-items: center;">
                         <input type="checkbox" value="link.created" style="margin-right: 8px;">
-                        <span>link.created - When you create a new link</span>
+                        <span style="font-size: 14px;">link.created - When you create a new link</span>
                     </label>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                 <button class="btn-primary" onclick="createWebhook()">Create Webhook</button>
             </div>

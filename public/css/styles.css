@@ -964,6 +964,24 @@ body.dark-theme .modal-content {
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
+/* Dashboard modals (API Keys, Webhooks, etc) */
+.modal-content.dashboard-modal {
+    max-width: 500px;
+    width: 90vw;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-actions .btn-primary,
+.modal-actions .btn-secondary {
+    flex: 0 1 auto;
+}
+
 @keyframes modalSlide {
     from {
         opacity: 0;
@@ -1299,6 +1317,23 @@ body.dark-theme .modal-content {
         grid-template-columns: 1fr;
         gap: 12px;
     }
+
+    .modal-content.dashboard-modal {
+        max-width: 90vw;
+        width: 90vw;
+        padding: 24px 20px;
+    }
+
+    .modal-actions {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .modal-actions .btn-primary,
+    .modal-actions .btn-secondary {
+        flex: 1;
+        width: auto;
+    }
 }
 
 /* Mobile (480px - 768px) */
@@ -1565,8 +1600,25 @@ body.dark-theme .modal-content {
         max-height: none;
     }
 
+    .modal-content.dashboard-modal {
+        max-width: 95vw !important;
+        width: 95vw;
+        padding: 20px 16px;
+    }
+
     .modal-large {
         max-width: 95vw !important;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-actions .btn-primary,
+    .modal-actions .btn-secondary {
+        width: 100%;
+        justify-content: center;
     }
 
     .modal-content h2 {
